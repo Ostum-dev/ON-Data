@@ -2,373 +2,725 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anime App</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>AnimeStream - منصة الأنمي التفاعلية</title>
+    <!-- Font Awesome 6 (أيقونات حرة) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* إعدادات الواجهة البيضاء العامة */
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
-        
-        body {
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #ffffff; 
-            color: #333333;
+        }
+
+        body {
+            background-color: white;
+            color: #1e1e2f;
             overflow-x: hidden;
         }
 
-        /* الشريط العلوي الأسود */
+        /* شريط أسود علوي */
         .top-bar {
             background-color: #000000;
-            color: #ffffff;
+            padding: 12px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 20px;
             position: sticky;
             top: 0;
             z-index: 100;
-            height: 60px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        /* أيقونات بيضاء للشريط العلوي */
-        .top-bar i {
-            color: #ffffff;
-            font-size: 22px;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .top-bar i:hover {
-            opacity: 0.8;
-        }
-
-        .top-bar .title {
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        /* القائمة الجانبية على اليمين بدلاً من اليسار */
-        .sidebar {
-            height: 100%;
-            width: 260px;
-            position: fixed;
-            top: 0;
-            right: -260px; /* مخفية في البداية خارج الشاشة يميناً */
-            background-color: #f8f9fa;
-            transition: right 0.3s ease;
-            z-index: 1000;
-            box-shadow: -2px 0 10px rgba(0,0,0,0.15);
-            padding-top: 20px;
-        }
-
-        .sidebar.open {
-            right: 0;
-        }
-
-        .sidebar-header {
-            padding: 10px 20px 20px 20px;
-            font-size: 18px;
-            font-weight: bold;
-            border-bottom: 1px solid #eeeeee;
-            color: #000000;
-        }
-
-        .sidebar a {
-            padding: 15px 20px;
-            text-decoration: none;
-            font-size: 16px;
-            color: #444444;
+        .top-bar .icons-group {
             display: flex;
+            gap: 22px;
+        }
+
+        .top-bar i {
+            color: white;
+            font-size: 1.6rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .top-bar i:active {
+            opacity: 0.7;
+        }
+
+        /* حقل البحث المنسدل (يظهر تحت الشريط) */
+        .search-container {
+            background: white;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e0e0e0;
+            display: none;
             align-items: center;
-            border-bottom: 1px solid #f1f1f1;
-            transition: background 0.2s;
+            gap: 12px;
+            position: sticky;
+            top: 60px;
+            z-index: 99;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-
-        .sidebar a:hover {
-            background-color: #ededed;
-            color: #000000;
+        .search-container.active {
+            display: flex;
         }
-
-        .sidebar a i {
-            margin-left: 12px;
-            font-size: 18px;
-            width: 25px;
-            text-align: center;
+        .search-container input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ccc;
+            border-radius: 40px;
+            font-size: 1rem;
+            background: #f9f9f9;
         }
-
-        /* شاشة تسجيل الدخول وإنشاء الحساب اليدوي */
-        .auth-container {
-            max-width: 400px;
-            margin: 60px auto padding;
-            padding: 30px 20px;
-            text-align: center;
-            background: #ffffff;
-        }
-
-        .auth-container h2 {
-            margin-bottom: 25px;
-            font-size: 22px;
-            color: #000000;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 12px 15px;
-            font-size: 16px;
-            border: 1px solid #cccccc;
-            border-radius: 6px;
-            outline: none;
-            text-align: right;
-        }
-
-        .input-group input:focus {
-            border-color: #000000;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 12px;
-            background-color: #000000;
-            color: #ffffff;
+        .search-container button {
+            background: black;
             border: none;
-            border-radius: 6px;
-            font-size: 16px;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 40px;
             font-weight: bold;
             cursor: pointer;
-            margin-bottom: 15px;
-            transition: background 0.2s;
         }
 
-        .btn:hover {
-            background-color: #222222;
+        /* المحتوى الرئيسي */
+        .main-content {
+            padding: 20px 18px 80px 18px;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
-        /* شاشة عرض الأنمي (شبكة عرض مشابهة لأنمي سلاير) */
-        #main-screen {
-            display: none; /* تظهر فقط بعد تسجيل الدخول */
-            padding: 12px;
+        /* بطاقات الأنمي (مشابهة للصورة) */
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin: 20px 0 12px 0;
+            border-right: 6px solid #ff5722;
+            padding-right: 12px;
         }
 
         .anime-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); /* عمودين مثل لقطات الشاشة */
-            gap: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
         }
 
         .anime-card {
-            background: #ffffff;
-            border-radius: 8px;
+            background: #fefefe;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .anime-card:active {
-            transform: scale(0.98);
-        }
-
-        .anime-card img {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
-            display: block;
+            transition: 0.2s;
+            display: flex;
+            flex-direction: column;
         }
 
         .anime-info {
-            padding: 10px;
-            font-size: 14px;
+            padding: 14px 16px;
         }
 
         .anime-title {
-            font-weight: bold;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 4px;
+            font-size: 1.25rem;
+            font-weight: 800;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
         }
-
-        .episode-badge {
-            position: absolute;
-            bottom: 55px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.75);
-            color: #ffffff;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            direction: ltr;
+        .anime-title h3 {
+            font-size: 1.2rem;
         }
-
         .rating {
-            color: #ff9800;
-            font-size: 13px;
+            background: #ffb74d;
+            padding: 4px 10px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #2c2c2c;
+        }
+        .anime-meta {
+            display: flex;
+            gap: 15px;
+            margin: 8px 0 12px 0;
+            font-size: 0.85rem;
+            color: #555;
+        }
+        .play-btn {
+            background: #000000;
+            color: white;
+            border: none;
+            padding: 10px 0;
+            width: 100%;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 8px;
             display: flex;
             align-items: center;
-            gap: 4px;
+            justify-content: center;
+            gap: 10px;
+        }
+        .play-btn i {
+            font-size: 1rem;
+        }
+        .play-btn:active {
+            background: #333;
         }
 
-        .status-tag {
-            color: #777777;
-            font-size: 12px;
-            margin-top: 2px;
+        /* القائمة الجانبية (تظهر من اليمين) */
+        .side-menu {
+            position: fixed;
+            top: 0;
+            right: -280px;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.2);
+            z-index: 200;
+            transition: right 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+            border-right: 1px solid #ddd;
+        }
+        .side-menu.open {
+            right: 0;
+        }
+        .menu-header {
+            padding: 20px 20px 10px;
+            border-bottom: 1px solid #eaeaea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .menu-header h4 {
+            font-size: 1.3rem;
+        }
+        .close-menu {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+        .menu-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 0;
+        }
+        .menu-item {
+            padding: 14px 24px;
+            font-size: 1rem;
+            font-weight: 500;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .menu-item i {
+            width: 24px;
+            color: #ff5722;
+        }
+        .menu-item:active {
+            background: #f5f5f5;
+        }
+        .logout-item {
+            color: #d32f2f;
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        /* خلفية مظلمة عند فتح القائمة */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            z-index: 150;
+            display: none;
+        }
+        .overlay.active {
+            display: block;
+        }
+
+        /* شاشة تسجيل الدخول */
+        .auth-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: white;
+            padding: 30px 20px;
+        }
+        .auth-card {
+            background: white;
+            width: 100%;
+            max-width: 380px;
+            border-radius: 32px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+            padding: 32px 24px;
+            text-align: center;
+            border: 1px solid #eee;
+        }
+        .auth-card h2 {
+            margin-bottom: 24px;
+            font-weight: 800;
+        }
+        .input-group {
+            margin-bottom: 18px;
+            text-align: right;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid #ccc;
+            border-radius: 60px;
+            font-size: 1rem;
+            background: #fafafa;
+        }
+        .btn {
+            background: black;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+        .btn-outline {
+            background: white;
+            border: 1px solid black;
+            color: black;
+            margin-top: 12px;
+        }
+        .note {
+            font-size: 0.75rem;
+            color: gray;
+            margin-top: 20px;
+        }
+        .error-msg {
+            color: #c62828;
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+
+        /* رسائل التحميل */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: gray;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.7rem;
+            color: #aaa;
         }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <i class="fa-solid fa-bars" onclick="toggleSidebar()" id="menuBtn"></i> 
-        <span class="title" id="pageTitle">تسجيل الدخول</span>
-        <i class="fa-solid fa-magnify" onclick="triggerSearch()"></i> 
-    </div>
-
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">قائمة الأقسام</div>
-        <a href="#" onclick="switchSection('آخر التحديثات')"><i class="fa-solid fa-fire"></i> آخر التحديثات</a>
-        <a href="#" onclick="switchSection('لائحة الأنمي')"><i class="fa-solid fa-list"></i> لائحة الأنمي</a>
-        <a href="#" onclick="switchSection('المواسم')"><i class="fa-solid fa-calendar"></i> المواسم</a>
-        <a href="#" onclick="switchSection('التقييم العالمي')"><i class="fa-solid fa-chart-simple"></i> التقييم العالمي</a>
-        <a href="#" onclick="switchSection('التقييم العربي')"><i class="fa-solid fa-chart-simple"></i> التقييم العربي</a>
-        <a href="#" onclick="switchSection('الإعدادات')"><i class="fa-solid fa-gear"></i> الإعدادات</a>
-    </div>
-
-    <div id="auth-screen" class="auth-container">
-        <h2>إنشاء حساب جديد</h2>
+<!-- شاشة المصادقة (تسجيل الدخول / إنشاء حساب) -->
+<div id="authContainer" class="auth-screen">
+    <div class="auth-card">
+        <h2><i class="fas fa-tv"></i> أنمي سلاير</h2>
+        <p style="margin-bottom: 20px;">تسجيل الدخول أو إنشاء حساب</p>
         <div class="input-group">
-            <input type="email" id="email" placeholder="البريد الإلكتروني">
+            <input type="email" id="authEmail" placeholder="البريد الإلكتروني" autocomplete="email">
         </div>
-        <button class="btn" onclick="sendCode()">إرسال رمز التحقق</button>
-        
-        <div class="input-group" style="margin-top: 30px;">
-            <input type="text" id="verify-code" placeholder="أدخل رمز التحقق">
+        <div class="input-group">
+            <input type="text" id="authCode" placeholder="رمز التحقق (6 أرقام)">
         </div>
-        <button class="btn" onclick="verifyAndLogin()">تأكيد ودخول</button>
+        <button id="requestCodeBtn" class="btn btn-outline">📨 طلب رمز التحقق</button>
+        <button id="loginSignupBtn" class="btn" style="margin-top: 16px;">➡️ دخول / إنشاء حساب</button>
+        <div id="authMessage" class="error-msg"></div>
+        <div class="note">✉️ سيظهر رمز التحقق في تنبيه مؤقت – أدخله للمتابعة</div>
+    </div>
+</div>
+
+<!-- التطبيق الرئيسي (بعد تسجيل الدخول) -->
+<div id="appContainer" style="display: none;">
+    <div class="top-bar">
+        <div class="icons-group">
+            <i class="fas fa-search" id="searchIcon"></i>
+            <i class="fas fa-sliders-h" id="settingsIcon"></i>  <!-- أيقونة إعدادات -->
+        </div>
+        <div class="icons-group">
+            <i class="fas fa-bars" id="menuIcon"></i>
+        </div>
     </div>
 
-    <div id="main-screen">
-        <div class="anime-grid" id="animeGrid">
-            </div>
+    <!-- حقل البحث المنسدل -->
+    <div id="searchBar" class="search-container">
+        <input type="text" id="searchInput" placeholder="ابحث عن أنمي، تصنيف، ممثل...">
+        <button id="searchBtn"><i class="fas fa-search"></i> بحث</button>
     </div>
 
-    <script>
-        // إعدادات السيرفر المحلي والكاشط الخاص بك
-        const SERVER_IP = "http://10.0.0.33:5000"; 
+    <div class="main-content" id="dynamicContent">
+        <!-- المحتوى ديناميكي -->
+        <div class="loading">جلب أحدث الأنمي من الكاشط الداخلي...</div>
+    </div>
+    <footer>© AnimeStream - مشغل خارجي | بيانات من كاشط (محاكاة موقع أنمي عرب)</footer>
+</div>
 
-        // فتح وإغلاق القائمة الجانبية اليمنى
-        function toggleSidebar() {
-            document.getElementById("sidebar").classList.toggle("open");
-        }
+<!-- القائمة الجانبية (يمين) -->
+<div id="sideMenu" class="side-menu">
+    <div class="menu-header">
+        <h4><i class="fas fa-list-ul"></i> القوائم</h4>
+        <button class="close-menu" id="closeMenuBtn">&times;</button>
+    </div>
+    <div class="menu-items" id="menuItemsList">
+        <!-- ستحقن ديناميكيًا من JS مع الأيقونات -->
+    </div>
+    <div class="menu-item logout-item" id="logoutMenuItem">
+        <i class="fas fa-sign-out-alt"></i> <span>تسجيل الخروج</span>
+    </div>
+</div>
+<div id="overlay" class="overlay"></div>
 
-        // إغلاق القائمة الجانبية عند الضغط في أي مكان خارجها
-        document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const menuBtn = document.getElementById('menuBtn');
-            if (!sidebar.contains(event.target) && event.target !== menuBtn) {
-                sidebar.classList.remove('open');
-            }
-        });
+<script>
+    // --------------------- قائمة الخيارات الجانبية (يمين) -----------------
+    const MENU_OPTIONS = [
+        { id: "nominal_list", name: "لائحة الاسمي", icon: "fa-user-graduate" },
+        { id: "seasons", name: "المواسم", icon: "fa-calendar-alt" },
+        { id: "global_rank", name: "التقييم العالمي", icon: "fa-globe" },
+        { id: "arab_rank", name: "التقييم العربي", icon: "fa-star" },
+        { id: "my_list", name: "قائمتي", icon: "fa-bookmark" },
+        { id: "custom_list", name: "القائمة المخصصة", icon: "fa-pen-fancy" },
+        { id: "fav_finishes", name: "أتمياتي المفضلة", icon: "fa-heart" },
+        { id: "fav_chars", name: "شخصياتي المفضلة", icon: "fa-mask" },
+        { id: "recent_watch", name: "اخر المشاهدات", icon: "fa-history" },
+        { id: "downloads", name: "تحميلاتي", icon: "fa-download" },
+        { id: "popular_chars", name: "الشخصيات الاكثر شعبية", icon: "fa-fire" },
+        { id: "recommend", name: "التوصيات", icon: "fa-lightbulb" },
+        { id: "schedule", name: "مواعيد نزول الحلقات", icon: "fa-clock" },
+        { id: "settings", name: "الإعدادات", icon: "fa-cog" }
+    ];
 
-        // 1. منطق التحقق اليدوي للحساب
-        async function sendCode() {
-            const email = document.getElementById("email").value;
-            if(!email) return alert("يرجى كتابة البريد الإلكتروني أولاً");
-            
-            try {
-                const response = await fetch(`${SERVER_IP}/api/auth/send_code`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email: email })
-                });
-                alert("تم طلب رمز التحقق، تفقد بريدك الإلكتروني.");
-            } catch (err) {
-                alert("تنبيه: لم يتم الاتصال بالسيرفر 10.0.0.33، ولكن يمكنك المتابعة للتجربة.");
-            }
-        }
+    // بيانات الأنمي (محاكاة من كاشط داخلي "موقع أنمي عرب")
+    let masterAnimeList = [];
+    let currentUser = null;
+    let pendingVerificationCode = null;   // رمز التحقق المؤقت
+    let lastSearchTerm = "";
+    let currentView = "latest";    // latest, mylist, global_rank...
+    let userFavorites = [];          // قائمة مفضلات المستخدم (my list ids)
 
-        function verifyAndLogin() {
-            const code = document.getElementById("verify-code").value;
-            if(!code) return alert("يرجى إدخال رمز التحقق المستلم");
-
-            // إخفاء واجهة التسجيل وإظهار واجهة الأنمي الرئيسية
-            document.getElementById("auth-screen").style.display = "none";
-            document.getElementById("main-screen").style.display = "block";
-            document.getElementById("pageTitle").innerText = "آخر التحديثات";
-            
-            // استدعاء دالة جلب الأنمي من الكاشط المربوط بالسيرفر
-            loadAnimeContent();
-        }
-
-        // 2. جلب الحلقات والأعمال المكسورة داخلياً عبر السيرفر
-        async function loadAnimeContent() {
-            const grid = document.getElementById("animeGrid");
-            grid.innerHTML = "<p style='grid-column: 1/-1; text-align:center;'>جاري سحب وتحديث البيانات والروابط...</p>";
-
-            try {
-                const response = await fetch(`${SERVER_URL}/api/anime/latest`);
-                const result = await response.json();
-                
-                if(result.status === "success") {
-                    grid.innerHTML = "";
-                    result.data.forEach(anime => {
-                        appendAnimeCard(anime);
-                    });
-                }
-            } catch (err) {
-                // عرض بيانات تجريبية (Mock) تحاكي نفس شكل تطبيق انمي سلاير المرفق في حال السيرفر غير نشط حالياً
-                grid.innerHTML = "";
-                const mockData = [
-                    { title: "Tensei shitara...", episode: "الحلقة : 9", rating: "8.3", image: "https://images.justwatch.com/poster/312015037/s372/that-time-i-got-reincarnated-as-a-slime.webp", status: "مستمر" },
-                    { title: "Mata Korosare...", episode: "الحلقة : 10", rating: "8.1", image: "https://m.media-amazon.com/images/M/ANvYTMwMDAtMWY0Mi00OGFiLWI1YmQtYmZkOTAyMDBhMTcyXkEyXkFqcGdeQXVyMTEzMTI1Mjk3._V1_.jpg", status: "مستمر" },
-                    { title: "Koori no Jouheki", episode: "الحلقة : 10", rating: "8.18", image: "https://m.media-amazon.com/images/I/718b9SclVXL._AC_UF1000,1000_QL80_.jpg", status: "مستمر" }
+    // --------------------- محاكاة كاشط داخلي (جلب من موقع أنمي عرب) -----------------
+    // دالة تحاكي استدعاء API من موقع عربي وتستخرج البيانات
+    async function fetchAnimeFromArabScraper() {
+        // كاشط داخلي وهمي: يعيد قائمة أنمي مستوحاة من الصورة + بيانات متنوعة
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                const scrapedData = [
+                    { id: 1, title: "神の雪 · Kami no Yuki", titleAr: "كامي نو يوكي", rating: 8.9, releaseTime: "9:00", season: "ربيع 2026", episode: "الحلقة 3", externalUrl: "https://example.com/stream/kami1" },
+                    { id: 2, title: "Tensei shitara Dainana Ouji", titleAr: "تناسخ الأمير السابع", rating: 8.3, releaseTime: "8:07", season: "صيف 2026", episode: "الحلقة 5", externalUrl: "https://example.com/stream/tensei2" },
+                    { id: 3, title: "降りる天使様 · Oriru Tenshi", titleAr: "الملاك الهابط", rating: 8.5, releaseTime: "10:00", season: "ربيع 2026", episode: "الحلقة 2", externalUrl: "https://example.com/stream/oriru3" },
+                    { id: 4, title: "Otonari no Tenshi-sama", titleAr: "جاري الملاك", rating: 8.22, releaseTime: "22:30", season: "مستمر", episode: "الحلقة 8", externalUrl: "https://example.com/stream/otonari4" },
+                    { id: 5, title: "Jishou Akuyaku Reijou", titleAr: "الأميرة الشريرة", rating: 8.19, releaseTime: "17:00", season: "خريف 2025", episode: "الحلقة 12", externalUrl: "https://example.com/stream/jishou5" },
+                    { id: 6, title: "Mata Korosareta", titleAr: "قتل مجدداً", rating: 8.1, releaseTime: "20:00", season: "شتاء 2026", episode: "الحلقة 4", externalUrl: "https://example.com/stream/mata6" },
+                    { id: 7, title: "Haibara-kun no Tsuyokute", titleAr: "هايبارا العظيم", rating: 8.13, releaseTime: "19:30", season: "ربيع 2026", episode: "الحلقة 1", externalUrl: "https://example.com/stream/haibara7" },
+                    { id: 8, title: "Awajima Hyakkei", titleAr: "أواجيما مئة منظر", rating: 8.09, releaseTime: "8:00", season: "أبريل", episode: "الحلقة 6", externalUrl: "https://example.com/stream/awajima8" },
+                    { id: 9, title: "Koori no Jouheki", titleAr: "جدار الجليد", rating: 8.18, releaseTime: "21:00", season: "يوليو", episode: "الحلقة 2", externalUrl: "https://example.com/stream/koori9" },
+                    { id: 10, title: "Hokuto no Ken: Legend", titleAr: "قبضة نجم الشمال", rating: 8.12, releaseTime: "مستمر", season: "كلاسيكي", episode: "الحلقة 45", externalUrl: "https://example.com/stream/hokuto10" }
                 ];
-                
-                mockData.forEach(anime => appendAnimeCard(anime));
-            }
+                resolve(scrapedData);
+            }, 300);
+        });
+    }
+
+    // دالة تحديث المكتبة من الكاشط
+    async function refreshAnimeLibrary() {
+        const data = await fetchAnimeFromArabScraper();
+        masterAnimeList = data;
+        return masterAnimeList;
+    }
+
+    // عرض المحتوى حسب view الحالي
+    async function renderCurrentView(searchTerm = "") {
+        const container = document.getElementById("dynamicContent");
+        if (!container) return;
+        
+        let filtered = [...masterAnimeList];
+        if (searchTerm) {
+            filtered = filtered.filter(anime => 
+                anime.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                (anime.titleAr && anime.titleAr.includes(searchTerm))
+            );
         }
-
-        function appendAnimeCard(anime) {
-            const grid = document.getElementById("animeGrid");
-            
-            // تحضير رابط لتشغيل الحلقة على مشغل الهاتف الخارجي (كـ Intent للأندرويد)
-            const directVideoUrl = "http://10.0.0.33/videos/sample.mp4"; // مثال لرابط الفيديو المستخرج عبر الكاشط
-            const androidIntent = `intent://${directVideoUrl.replace(/^https?:\/\//, '')}#Intent;action=android.intent.action.VIEW;type=video/*;end`;
-
-            const card = `
-                <div class="anime-card" onclick="window.location.href='${androidIntent}'">
-                    <img src="${anime.image}" alt="cover">
-                    <div class="episode-badge">${anime.episode}</div>
+        
+        // تطبيق view
+        if (currentView === "global_rank") {
+            filtered.sort((a,b) => b.rating - a.rating);
+        } else if (currentView === "my_list") {
+            filtered = filtered.filter(anime => userFavorites.includes(anime.id));
+        } else if (currentView === "recommend") {
+            filtered = filtered.filter(anime => anime.rating >= 8.2);
+        } else if (currentView === "arab_rank") {
+            filtered.sort((a,b) => b.rating - a.rating);
+        } else {
+            // latest وغيرها default نفس الترتيب
+        }
+        
+        if (filtered.length === 0) {
+            container.innerHTML = `<div style="text-align:center; padding:50px;">⚠️ لا توجد أنمي مطابقة <br> <button class="btn btn-outline" id="refreshDataBtn" style="margin-top:15px;">🔄 تحديث من الكاشط</button></div>`;
+            const refreshBtn = document.getElementById("refreshDataBtn");
+            if(refreshBtn) refreshBtn.onclick = async () => { await loadAndDisplayAnime(); renderCurrentView(lastSearchTerm); };
+            return;
+        }
+        
+        let html = `<div class="section-title"><i class="fas fa-fire"></i> ${getViewTitle()} </div><div class="anime-grid">`;
+        filtered.forEach(anime => {
+            html += `
+                <div class="anime-card">
                     <div class="anime-info">
-                        <div class="anime-title">${anime.title}</div>
-                        <div class="status-tag">${anime.status}</div>
-                        <div class="rating"><i class="fa-solid fa-star"></i> ${anime.rating}</div>
+                        <div class="anime-title">
+                            <h3>${anime.title}</h3>
+                            <span class="rating">★ ${anime.rating}</span>
+                        </div>
+                        <div class="anime-meta">
+                            <span><i class="far fa-clock"></i> ${anime.releaseTime}</span>
+                            <span><i class="fas fa-tag"></i> ${anime.season || "مستمر"}</span>
+                            <span><i class="fas fa-play-circle"></i> ${anime.episode}</span>
+                        </div>
+                        <button class="play-btn" data-url="${anime.externalUrl}" data-title="${anime.title}"><i class="fas fa-external-link-alt"></i> تشغيل (مشغل خارجي)</button>
+                        <div style="display:flex; justify-content:space-between; margin-top:8px;">
+                            <small style="color:#777;">${anime.titleAr || ""}</small>
+                            ${currentView !== "my_list" ? `<button class="fav-btn-small" data-id="${anime.id}" style="background:none; border:none; color:#ff5722;"><i class="fa-${userFavorites.includes(anime.id) ? 'solid' : 'regular'} fa-heart"></i></button>` : ''}
+                        </div>
                     </div>
                 </div>
             `;
-            grid.innerHTML += card;
+        });
+        html += `</div><div style="margin-top:20px; text-align:center;"><button id="forceScrapeBtn" class="btn btn-outline" style="background:#eee;"><i class="fas fa-sync-alt"></i> تحديث من كاشط الأنمي العربي</button></div>`;
+        container.innerHTML = html;
+        
+        // أحداث الأزرار
+        document.querySelectorAll('.play-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const url = btn.getAttribute('data-url');
+                const title = btn.getAttribute('data-title');
+                // استخدام مشغل خارجي (فتح نافذة جديدة)
+                window.open(url, '_blank');
+                alert(`سيتم تشغيل "${title}" عبر مشغل خارجي 👾`);
+            });
+        });
+        
+        document.querySelectorAll('.fav-btn-small').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const animeId = parseInt(btn.getAttribute('data-id'));
+                if(userFavorites.includes(animeId)) {
+                    userFavorites = userFavorites.filter(id => id !== animeId);
+                } else {
+                    userFavorites.push(animeId);
+                }
+                saveUserData();
+                renderCurrentView(lastSearchTerm);
+            });
+        });
+        
+        const scrapeBtn = document.getElementById("forceScrapeBtn");
+        if(scrapeBtn) scrapeBtn.onclick = async () => {
+            await loadAndDisplayAnime();
+            renderCurrentView(lastSearchTerm);
+        };
+    }
+    
+    function getViewTitle() {
+        const titles = {
+            latest: "📺 آخر التحديثات",
+            global_rank: "🌍 التقييم العالمي",
+            arab_rank: "⭐ التقييم العربي",
+            my_list: "📋 قائمتي",
+            recommend: "💡 توصيات لك",
+            nominal_list: "📜 لائحة الاسمي",
+            seasons: "🌸 المواسم",
+            custom_list: "✏️ القائمة المخصصة",
+            fav_finishes: "❤️ أتمياتي المفضلة",
+            fav_chars: "🎭 شخصياتي المفضلة",
+            recent_watch: "🕒 اخر المشاهدات",
+            downloads: "📥 تحميلاتي",
+            popular_chars: "🔥 الشخصيات الاكثر شعبية",
+            schedule: "📅 مواعيد نزول الحلقات",
+            settings: "⚙️ الإعدادات"
+        };
+        return titles[currentView] || "آخر المستجدات";
+    }
+    
+    async function loadAndDisplayAnime() {
+        await refreshAnimeLibrary();
+    }
+    
+    // إعداد القائمة الجانبية (يمين)
+    function buildSideMenu() {
+        const menuContainer = document.getElementById("menuItemsList");
+        menuContainer.innerHTML = "";
+        MENU_OPTIONS.forEach(opt => {
+            const div = document.createElement("div");
+            div.className = "menu-item";
+            div.innerHTML = `<i class="fas ${opt.icon}"></i> <span>${opt.name}</span>`;
+            div.addEventListener("click", () => {
+                currentView = opt.id;
+                lastSearchTerm = "";
+                document.getElementById("searchInput").value = "";
+                document.getElementById("searchBar").classList.remove("active");
+                renderCurrentView("");
+                closeSideMenu();
+            });
+            menuContainer.appendChild(div);
+        });
+    }
+    
+    function openSideMenu() { document.getElementById("sideMenu").classList.add("open"); document.getElementById("overlay").classList.add("active"); }
+    function closeSideMenu() { document.getElementById("sideMenu").classList.remove("open"); document.getElementById("overlay").classList.remove("active"); }
+    
+    // حفظ بيانات المستخدم
+    function saveUserData() {
+        if(currentUser) {
+            const data = { email: currentUser, favorites: userFavorites };
+            localStorage.setItem(`anime_user_${currentUser}`, JSON.stringify(data));
         }
-
-        function triggerSearch() {
-            alert("تم تفعيل شريط البحث");
-        }
-
-        function switchSection(name) {
-            document.getElementById("pageTitle").innerText = name;
-            toggleSidebar();
-            if(name === "آخر التحديثات") {
-                loadAnimeContent();
+    }
+    function loadUserData(email) {
+        const raw = localStorage.getItem(`anime_user_${email}`);
+        if(raw) {
+            try {
+                const data = JSON.parse(raw);
+                userFavorites = data.favorites || [];
+            } catch(e) { userFavorites = []; }
+        } else { userFavorites = []; }
+    }
+    
+    // نظام المصادقة اليدوي (بريد + رمز تحقق)
+    function initAuth() {
+        const requestBtn = document.getElementById("requestCodeBtn");
+        const loginBtn = document.getElementById("loginSignupBtn");
+        const authEmail = document.getElementById("authEmail");
+        const authCodeInput = document.getElementById("authCode");
+        const authMsg = document.getElementById("authMessage");
+        
+        requestBtn.onclick = () => {
+            const email = authEmail.value.trim();
+            if(!email || !email.includes("@")) {
+                authMsg.innerText = "بريد إلكتروني صالح مطلوب";
+                return;
             }
+            const code = Math.floor(100000 + Math.random() * 900000).toString();
+            pendingVerificationCode = code;
+            alert(`📧 رمز التحقق الخاص بك: ${code}\n(محاكاة إرسال إلى البريد ${email})`);
+            authMsg.innerText = "✓ تم إرسال الرمز، أدخله ثم اضغط دخول";
+        };
+        
+        loginBtn.onclick = () => {
+            const email = authEmail.value.trim();
+            const enteredCode = authCodeInput.value.trim();
+            if(!email || !email.includes("@")) { authMsg.innerText = "البريد مطلوب"; return; }
+            if(!pendingVerificationCode) { authMsg.innerText = "يرجى طلب رمز التحقق أولاً"; return; }
+            if(enteredCode !== pendingVerificationCode) { authMsg.innerText = "رمز غير صحيح"; return; }
+            // نجاح المصادقة
+            currentUser = email;
+            loadUserData(currentUser);
+            // إخفاء شاشة auth وعرض التطبيق
+            document.getElementById("authContainer").style.display = "none";
+            document.getElementById("appContainer").style.display = "block";
+            // تحميل البيانات من الكاشط
+            loadAndDisplayAnime().then(() => {
+                currentView = "latest";
+                renderCurrentView("");
+            });
+            localStorage.setItem("loggedInUser", currentUser);
+            pendingVerificationCode = null;
+        };
+        
+        // فتح تلقائي إذا كان هناك مستخدم مخزن
+        const savedUser = localStorage.getItem("loggedInUser");
+        if(savedUser) {
+            currentUser = savedUser;
+            loadUserData(currentUser);
+            document.getElementById("authContainer").style.display = "none";
+            document.getElementById("appContainer").style.display = "block";
+            loadAndDisplayAnime().then(() => {
+                currentView = "latest";
+                renderCurrentView("");
+            });
         }
-    </script>
+    }
+    
+    // إعدادات الإضافات UI
+    function setupUI() {
+        document.getElementById("menuIcon").addEventListener("click", openSideMenu);
+        document.getElementById("closeMenuBtn").addEventListener("click", closeSideMenu);
+        document.getElementById("overlay").addEventListener("click", closeSideMenu);
+        document.getElementById("searchIcon").addEventListener("click", () => {
+            const sb = document.getElementById("searchBar");
+            sb.classList.toggle("active");
+            if(sb.classList.contains("active")) document.getElementById("searchInput").focus();
+        });
+        document.getElementById("settingsIcon").addEventListener("click", () => {
+            currentView = "settings";
+            renderCurrentView("");
+            closeSideMenu();
+        });
+        const searchBtn = document.getElementById("searchBtn");
+        const searchInput = document.getElementById("searchInput");
+        searchBtn.onclick = () => {
+            lastSearchTerm = searchInput.value.trim();
+            renderCurrentView(lastSearchTerm);
+        };
+        searchInput.addEventListener("keypress", (e) => { if(e.key === "Enter") searchBtn.click(); });
+        
+        document.getElementById("logoutMenuItem").addEventListener("click", () => {
+            localStorage.removeItem("loggedInUser");
+            currentUser = null;
+            userFavorites = [];
+            document.getElementById("appContainer").style.display = "none";
+            document.getElementById("authContainer").style.display = "flex";
+            document.getElementById("authEmail").value = "";
+            document.getElementById("authCode").value = "";
+            pendingVerificationCode = null;
+            closeSideMenu();
+        });
+        buildSideMenu();
+    }
+    
+    // معالجة عرض الاعدادات (مؤقت)
+    const origRender = renderCurrentView;
+    window.renderCurrentView = async function(search) {
+        if(currentView === "settings") {
+            const container = document.getElementById("dynamicContent");
+            container.innerHTML = `<div class="section-title">⚙️ الإعدادات</div>
+            <div style="background:#f9f9f9; border-radius:28px; padding:24px;">
+            <p><i class="fas fa-user-circle"></i> <strong>${currentUser}</strong></p>
+            <p><i class="fas fa-sync-alt"></i> تحديث البيانات من الكاشط (موقع أنمي عرب) يعمل تلقائياً.</p>
+            <button id="clearFavBtn" class="btn btn-outline" style="background:black;color:white;">مسح قائمتي</button>
+            <button id="resetScrapeBtn" class="btn" style="margin-top:12px;">🔄 إعادة جلب الأنمي</button>
+            </div>`;
+            document.getElementById("clearFavBtn")?.addEventListener("click", () => { userFavorites = []; saveUserData(); alert("تم مسح قائمة المفضلة"); renderCurrentView(); });
+            document.getElementById("resetScrapeBtn")?.addEventListener("click", async () => { await loadAndDisplayAnime(); renderCurrentView(lastSearchTerm); alert("تم تحديث المكتبة من الكاشط"); });
+            return;
+        }
+        await origRender(search);
+    };
+    renderCurrentView = window.renderCurrentView;
+    
+    // بدء التطبيق
+    window.onload = () => {
+        initAuth();
+        setupUI();
+        // ربط الكاشط التلقائي عند بدأ التطبيق الرئيسي
+        window.loadAndDisplayAnime = loadAndDisplayAnime;
+    };
+</script>
 </body>
 </html>
