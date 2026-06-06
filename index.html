@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Animay - أنمي بلس</title>
+    <title>Animay - أنمي بلس | دخول Google</title>
     <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Identity Services SDK -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         * {
             margin: 0;
@@ -242,7 +244,7 @@
             display: block;
         }
 
-        /* شاشة تسجيل الدخول */
+        /* شاشة تسجيل الدخول عبر Google */
         .auth-screen {
             display: flex;
             flex-direction: column;
@@ -255,51 +257,42 @@
         .auth-card {
             background: white;
             width: 100%;
-            max-width: 380px;
+            max-width: 400px;
             border-radius: 32px;
             box-shadow: 0 12px 30px rgba(0,0,0,0.1);
-            padding: 32px 24px;
+            padding: 40px 28px;
             text-align: center;
             border: 1px solid #eee;
         }
         .auth-card h2 {
-            margin-bottom: 24px;
+            margin-bottom: 16px;
             font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-        .input-group {
-            margin-bottom: 18px;
-            text-align: right;
+        .auth-card p {
+            color: #555;
+            margin-bottom: 32px;
         }
-        .input-group input {
-            width: 100%;
-            padding: 14px 18px;
-            border: 1px solid #ccc;
-            border-radius: 60px;
-            font-size: 1rem;
-            background: #fafafa;
-        }
-        .btn {
-            background: black;
-            color: white;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 60px;
-            font-weight: bold;
-            font-size: 1rem;
-            margin-top: 8px;
-            cursor: pointer;
-        }
-        .btn-outline {
-            background: white;
-            border: 1px solid black;
-            color: black;
-            margin-top: 12px;
+        .google-btn-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
         }
         .error-msg {
             color: #c62828;
             font-size: 0.8rem;
-            margin-top: 8px;
+            margin-top: 12px;
+        }
+        .user-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 2px solid #eee;
         }
         .network-status {
             background: #f1f1f1;
@@ -333,21 +326,30 @@
 </head>
 <body>
 
-<!-- شاشة المصادقة -->
+<!-- شاشة تسجيل الدخول عبر Google -->
 <div id="authContainer" class="auth-screen">
     <div class="auth-card">
         <h2><i class="fas fa-tv"></i> Animay</h2>
-        <p style="margin-bottom: 20px;">تسجيل الدخول أو إنشاء حساب يدوي</p>
-        <div class="input-group">
-            <input type="email" id="authEmail" placeholder="البريد الإلكتروني" autocomplete="email">
+        <p>سجل الدخول باستخدام حساب Google للمتابعة</p>
+        <div id="g_id_onload"
+             data-client_id="375592908028-1to9gfj6d6e3f6g1v2kq8s0p2j3r5k7c.apps.googleusercontent.com"
+             data-context="signin"
+             data-ux_mode="popup"
+             data-callback="handleGoogleCredential"
+             data-auto_prompt="false">
         </div>
-        <div class="input-group">
-            <input type="text" id="authCode" placeholder="رمز التحقق (6 أرقام)">
+        <div class="google-btn-wrapper">
+            <div class="g_id_signin"
+                 data-type="standard"
+                 data-shape="rectangular"
+                 data-theme="outline"
+                 data-text="signin_with"
+                 data-size="large"
+                 data-logo_alignment="left">
+            </div>
         </div>
-        <button id="requestCodeBtn" class="btn btn-outline">📨 طلب رمز التحقق</button>
-        <button id="loginSignupBtn" class="btn" style="margin-top: 16px;">➡️ دخول / إنشاء حساب</button>
         <div id="authMessage" class="error-msg"></div>
-        <div class="note" style="margin-top:16px;">✉️ سيظهر رمز التحقق في تنبيه مؤقت</div>
+        <div class="note" style="margin-top:20px; font-size:0.7rem;">🔐 تسجيل الدخول المباشر بحساب Google | تجربة آمنة</div>
     </div>
 </div>
 
@@ -394,7 +396,7 @@
 <div id="overlay" class="overlay"></div>
 
 <script>
-    // ------------------- قائمة الخيارات (يمين) -----------------
+    // ------------------- قائمة الخيارات الجانبية (يمين) -----------------
     const MENU_OPTIONS = [
         { id: "nominal_list", name: "لائحة الاسمي", icon: "fa-user-graduate" },
         { id: "seasons", name: "المواسم", icon: "fa-calendar-alt" },
@@ -413,11 +415,10 @@
     ];
 
     let masterAnimeList = [];
-    let currentUser = null;
-    let pendingVerificationCode = null;
+    let currentUser = null;       // سيحتوي على بيانات المستخدم من Google (email, name, picture)
+    let userFavorites = [];
     let lastSearchTerm = "";
     let currentView = "latest";
-    let userFavorites = [];
 
     // ---------- كاشط داخلي (محاكاة موقع أنمي عرب) ----------
     async function fetchAnimeFromArabScraper() {
@@ -580,14 +581,16 @@
     function openSideMenu() { document.getElementById("sideMenu").classList.add("open"); document.getElementById("overlay").classList.add("active"); }
     function closeSideMenu() { document.getElementById("sideMenu").classList.remove("open"); document.getElementById("overlay").classList.remove("active"); }
     
+    // حفظ بيانات المستخدم (المفضلة) مرتبطة بالبريد الإلكتروني
     function saveUserData() {
-        if(currentUser) {
-            const data = { email: currentUser, favorites: userFavorites };
-            localStorage.setItem(`anime_user_${currentUser}`, JSON.stringify(data));
+        if(currentUser && currentUser.email) {
+            const data = { email: currentUser.email, favorites: userFavorites, name: currentUser.name, picture: currentUser.picture };
+            localStorage.setItem(`animay_user_${currentUser.email}`, JSON.stringify(data));
         }
     }
+    
     function loadUserData(email) {
-        const raw = localStorage.getItem(`anime_user_${email}`);
+        const raw = localStorage.getItem(`animay_user_${email}`);
         if(raw) {
             try {
                 const data = JSON.parse(raw);
@@ -596,7 +599,7 @@
         } else { userFavorites = []; }
     }
     
-    // رصد حالة الشبكة وعرض IP 10.0.0.33 المطلوب
+    // رصد حالة الشبكة وعرض IP 10.0.0.33
     function updateNetworkStatus() {
         const connTypeSpan = document.getElementById("connectionType");
         if ('connection' in navigator) {
@@ -611,60 +614,65 @@
         } else {
             connTypeSpan.innerText = "🌍 متصل بالشبكة";
         }
-        // عرض IP الثابت حسب الطلب
-        // كما يمكن إضافة كشف IP حقيقي لو أردنا لكن طلب المستخدم هو ربط 10.0.0.33
     }
     
-    // المصادقة اليدوية
-    function initAuth() {
-        const requestBtn = document.getElementById("requestCodeBtn");
-        const loginBtn = document.getElementById("loginSignupBtn");
-        const authEmail = document.getElementById("authEmail");
-        const authCodeInput = document.getElementById("authCode");
-        const authMsg = document.getElementById("authMessage");
-        
-        requestBtn.onclick = () => {
-            const email = authEmail.value.trim();
-            if(!email || !email.includes("@")) {
-                authMsg.innerText = "بريد إلكتروني صالح مطلوب";
-                return;
+    // معالج تسجيل الدخول الناجح من Google
+    window.handleGoogleCredential = (response) => {
+        // فك التشفير الأساسي للـ JWT (نستخدم مكتبة بسيطة أو نكتفي بالتحقق)
+        try {
+            const payload = parseJwt(response.credential);
+            if (payload && payload.email) {
+                currentUser = {
+                    email: payload.email,
+                    name: payload.name,
+                    picture: payload.picture,
+                    sub: payload.sub
+                };
+                loadUserData(currentUser.email);
+                // إخفاء شاشة المصادقة
+                document.getElementById("authContainer").style.display = "none";
+                document.getElementById("appContainer").style.display = "block";
+                loadAndDisplayAnime().then(() => {
+                    currentView = "latest";
+                    renderCurrentView("");
+                    updateNetworkStatus();
+                });
+                localStorage.setItem("animay_logged_user", JSON.stringify(currentUser));
+            } else {
+                document.getElementById("authMessage").innerText = "فشل الحصول على بيانات المستخدم.";
             }
-            const code = Math.floor(100000 + Math.random() * 900000).toString();
-            pendingVerificationCode = code;
-            alert(`📧 رمز التحقق: ${code}\nتم إرساله إلى ${email} (محاكاة)`);
-            authMsg.innerText = "✓ تم إرسال الرمز، أدخله ثم اضغط دخول";
-        };
-        
-        loginBtn.onclick = () => {
-            const email = authEmail.value.trim();
-            const enteredCode = authCodeInput.value.trim();
-            if(!email || !email.includes("@")) { authMsg.innerText = "البريد مطلوب"; return; }
-            if(!pendingVerificationCode) { authMsg.innerText = "يرجى طلب رمز التحقق أولاً"; return; }
-            if(enteredCode !== pendingVerificationCode) { authMsg.innerText = "رمز غير صحيح"; return; }
-            currentUser = email;
-            loadUserData(currentUser);
-            document.getElementById("authContainer").style.display = "none";
-            document.getElementById("appContainer").style.display = "block";
-            loadAndDisplayAnime().then(() => {
-                currentView = "latest";
-                renderCurrentView("");
-            });
-            localStorage.setItem("loggedInUser", currentUser);
-            pendingVerificationCode = null;
-            updateNetworkStatus(); // تحديث الشبكة عند الدخول
-        };
-        
-        const savedUser = localStorage.getItem("loggedInUser");
+        } catch(e) {
+            console.error(e);
+            document.getElementById("authMessage").innerText = "حدث خطأ في تسجيل الدخول.";
+        }
+    };
+    
+    // دالة مساعدة لفك JWT
+    function parseJwt(token) {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    }
+    
+    // استعادة جلسة سابقة
+    function restoreSession() {
+        const savedUser = localStorage.getItem("animay_logged_user");
         if(savedUser) {
-            currentUser = savedUser;
-            loadUserData(currentUser);
-            document.getElementById("authContainer").style.display = "none";
-            document.getElementById("appContainer").style.display = "block";
-            loadAndDisplayAnime().then(() => {
-                currentView = "latest";
-                renderCurrentView("");
-                updateNetworkStatus();
-            });
+            try {
+                const user = JSON.parse(savedUser);
+                currentUser = user;
+                loadUserData(currentUser.email);
+                document.getElementById("authContainer").style.display = "none";
+                document.getElementById("appContainer").style.display = "block";
+                loadAndDisplayAnime().then(() => {
+                    currentView = "latest";
+                    renderCurrentView("");
+                    updateNetworkStatus();
+                });
+            } catch(e) {}
         }
     }
     
@@ -692,30 +700,37 @@
         searchInput.addEventListener("keypress", (e) => { if(e.key === "Enter") searchBtn.click(); });
         
         document.getElementById("logoutMenuItem").addEventListener("click", () => {
-            localStorage.removeItem("loggedInUser");
+            localStorage.removeItem("animay_logged_user");
             currentUser = null;
             userFavorites = [];
+            // إعادة تعيين عرض المصادقة
             document.getElementById("appContainer").style.display = "none";
             document.getElementById("authContainer").style.display = "flex";
-            document.getElementById("authEmail").value = "";
-            document.getElementById("authCode").value = "";
-            pendingVerificationCode = null;
+            // مسح أي رسالة خطأ
+            document.getElementById("authMessage").innerText = "";
             closeSideMenu();
+            // يمكن إعادة تحميل صفحة Google One Tap
+            if(window.google?.accounts?.id) {
+                // محاولة إعادة تهيئة الزر
+            }
         });
         buildSideMenu();
     }
     
-    // توسيع دالة renderCurrentView لتشمل الإعدادات
+    // تعديل عرض الإعدادات
     const originalRender = renderCurrentView;
     window.renderCurrentView = async function(search) {
         if(currentView === "settings") {
             const container = document.getElementById("dynamicContent");
             container.innerHTML = `<div class="section-title">⚙️ الإعدادات</div>
             <div style="background:#f9f9f9; border-radius:28px; padding:24px;">
-                <p><i class="fas fa-user-circle"></i> <strong>${currentUser}</strong></p>
+                <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+                    <img src="${currentUser?.picture || ''}" class="user-avatar" style="width:60px; height:60px; border-radius:50%;">
+                    <div><strong>${currentUser?.name || ''}</strong><br><small>${currentUser?.email || ''}</small></div>
+                </div>
                 <p><i class="fas fa-network-wired"></i> عنوان الشبكة الثابت: <strong>10.0.0.33</strong> (IPv4)</p>
                 <p><i class="fas fa-signal"></i> حالة الاتصال: <span id="settingsConnType">جاري...</span></p>
-                <button id="clearFavBtn" class="btn btn-outline" style="background:black;color:white;">مسح قائمتي</button>
+                <button id="clearFavBtn" class="btn btn-outline" style="background:black;color:white; margin-top:15px;">مسح قائمتي</button>
                 <button id="resetScrapeBtn" class="btn" style="margin-top:12px;">🔄 إعادة جلب الأنمي</button>
             </div>`;
             if('connection' in navigator) {
@@ -733,14 +748,15 @@
     };
     renderCurrentView = window.renderCurrentView;
     
+    // بدء التشغيل
     window.onload = () => {
-        initAuth();
+        restoreSession();
         setupUI();
         window.loadAndDisplayAnime = loadAndDisplayAnime;
-        // مراقبة تغير الشبكة
         if ('connection' in navigator) {
             navigator.connection.addEventListener('change', updateNetworkStatus);
         }
+        // في حال لم يتم استعادة الجلسة، نظهر شاشة المصادقة
     };
 </script>
 </body>
