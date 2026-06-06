@@ -1,0 +1,32 @@
+name: Run Anime Scraper
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # تشغيل يومي في منتصف الليل
+  workflow_dispatch: # تسمح لك بتشغيله يدوياً من واجهة GitHub
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run scraper
+        run: node scraper.js
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add data.json
+          git commit -m 'Update anime data'
+          git push
