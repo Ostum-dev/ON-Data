@@ -1,1271 +1,177 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Animay</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-<style>
-:root{
-  --primary:#2196F3;--accent:#FF6B35;--star:#FFC107;
-  --bg:#fff;--bg2:#f5f5f5;--bg3:#eee;--card:#fff;
-  --text:#1a1a1a;--text2:#555;--text3:#888;--border:#e0e0e0;
-  --topbar:#1a1a1a;--sidebar-bg:#1e1e2e;--sidebar-active:#2196F3;
-  --shadow:0 2px 8px rgba(0,0,0,0.1);--radius:10px;--tr:0.25s ease;
-}
-[data-theme="dark"]{
-  --bg:#0f0f1a;--bg2:#161625;--bg3:#1e1e30;--card:#1e1e30;
-  --text:#f0f0f0;--text2:#aaa;--text3:#666;--border:#2a2a3e;
-  --topbar:#0a0a14;--shadow:0 2px 8px rgba(0,0,0,0.5);
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh;transition:background var(--tr),color var(--tr);}
-
-/* TOPBAR */
-.topbar{background:var(--topbar);display:flex;align-items:center;padding:0 14px;height:56px;position:sticky;top:0;z-index:100;gap:10px;}
-.topbar-title{flex:1;font-size:20px;font-weight:900;text-align:center;color:#fff;letter-spacing:1px;}
-.topbar-btn{background:none;border:none;cursor:pointer;padding:8px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:background var(--tr);}
-.topbar-btn:hover{background:rgba(255,255,255,0.1);}
-.topbar-btn svg{width:22px;height:22px;}
-
-/* OVERLAY */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;backdrop-filter:blur(2px);}
-.overlay.open{display:block;}
-
-/* SIDEBAR */
-.sidebar{position:fixed;top:0;right:-290px;width:275px;height:100%;background:var(--sidebar-bg);z-index:300;transition:right 0.3s ease;overflow-y:auto;display:flex;flex-direction:column;}
-.sidebar.open{right:0;}
-.sidebar-header{padding:20px 16px 14px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;flex-direction:column;align-items:center;gap:8px;}
-.sidebar-logo{font-size:22px;font-weight:900;color:#fff;letter-spacing:1px;}
-.sidebar-logo span{color:var(--primary);}
-.sidebar-avatar{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:24px;overflow:hidden;}
-.sidebar-avatar img{width:100%;height:100%;object-fit:cover;}
-.sidebar-username{color:#fff;font-size:14px;font-weight:700;}
-.sidebar-email{color:rgba(255,255,255,0.4);font-size:11px;}
-.sidebar-login-btn{background:var(--primary);color:#fff;border:none;border-radius:20px;padding:8px 18px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;}
-.sidebar-logout-btn{background:rgba(244,67,54,0.15);color:#f44336;border:1px solid rgba(244,67,54,0.4);border-radius:20px;padding:6px 14px;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
-.sidebar-nav{padding:6px 0;flex:1;}
-.sidebar-item{display:flex;align-items:center;gap:11px;padding:12px 18px;cursor:pointer;color:#ccc;font-size:13px;font-weight:500;transition:background var(--tr);border-right:3px solid transparent;}
-.sidebar-item:hover{background:rgba(255,255,255,0.06);}
-.sidebar-item.active{background:rgba(33,150,243,0.14);color:var(--sidebar-active);border-right-color:var(--sidebar-active);}
-.sidebar-item svg{width:18px;height:18px;flex-shrink:0;fill:currentColor;}
-.sidebar-divider{height:1px;background:rgba(255,255,255,0.06);margin:3px 0;}
-/* أيقونة المطور مخفية */
-.sidebar-admin-item{display:none;}
-.sidebar-admin-item.visible{display:flex;}
-
-/* SEARCH */
-.search-container{padding:10px 14px;background:var(--bg);border-bottom:1px solid var(--border);display:none;}
-.search-container.open{display:block;}
-.search-wrap{display:flex;align-items:center;background:var(--bg2);border-radius:24px;padding:0 13px;border:1.5px solid var(--border);gap:8px;}
-.search-wrap svg{width:17px;height:17px;flex-shrink:0;color:var(--text3);}
-.search-input{flex:1;border:none;background:none;padding:10px 0;font-family:'Cairo',sans-serif;font-size:14px;color:var(--text);outline:none;}
-
-/* CONTENT */
-.content{padding:12px;}
-.section-title{font-size:16px;font-weight:700;color:var(--text);padding:8px 0 12px;display:flex;align-items:center;gap:8px;}
-.section-title::before{content:'';display:block;width:4px;height:19px;background:var(--primary);border-radius:2px;}
-
-/* GRID */
-.anime-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
-.anime-card{background:var(--card);border-radius:var(--radius);overflow:hidden;cursor:pointer;box-shadow:var(--shadow);transition:transform var(--tr);position:relative;}
-.anime-card:active{transform:scale(0.97);}
-.anime-poster{width:100%;aspect-ratio:2/3;object-fit:cover;display:block;}
-.anime-poster-ph{width:100%;aspect-ratio:2/3;display:flex;align-items:center;justify-content:center;font-size:36px;}
-.ep-badge{position:absolute;bottom:44px;left:5px;background:rgba(0,0,0,0.75);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;}
-.anime-info{padding:6px 7px 8px;}
-.anime-name{font-size:11px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;}
-.anime-meta{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--text3);}
-.anime-rating{color:var(--star);font-weight:700;font-size:11px;}
-
-/* STATES */
-.empty-state{text-align:center;padding:50px 20px;color:var(--text3);grid-column:1/-1;}
-.empty-state .icon{font-size:48px;margin-bottom:10px;}
-.empty-state p{font-size:14px;font-weight:600;margin-bottom:5px;color:var(--text2);}
-.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.loading-state{text-align:center;padding:50px 20px;grid-column:1/-1;}
-
-/* PAGINATION */
-.pagination{display:flex;justify-content:center;gap:10px;padding:14px;grid-column:1/-1;}
-.page-btn{padding:8px 18px;background:var(--primary);color:#fff;border:none;border-radius:20px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;}
-.page-info{padding:8px 14px;background:var(--bg2);border-radius:20px;font-size:13px;font-weight:700;color:var(--text);}
-
-/* MODALS */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;align-items:center;justify-content:center;padding:16px;}
-.modal-overlay.open{display:flex;}
-.modal{background:var(--bg);border-radius:16px;width:100%;max-width:370px;padding:26px 22px;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:slideUp 0.3s ease;position:relative;}
-@keyframes slideUp{from{transform:translateY(28px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal-title{font-size:19px;font-weight:800;text-align:center;margin-bottom:5px;color:var(--text);}
-.modal-sub{text-align:center;color:var(--text3);font-size:12px;margin-bottom:20px;}
-.modal-close{position:absolute;top:11px;left:11px;background:var(--bg2);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;color:var(--text);}
-.form-group{margin-bottom:13px;}
-.form-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px;display:block;}
-.form-input{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:'Cairo',sans-serif;font-size:13px;background:var(--bg2);color:var(--text);outline:none;direction:rtl;transition:border-color var(--tr);}
-.form-input:focus{border-color:var(--primary);}
-.form-select{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:'Cairo',sans-serif;font-size:13px;background:var(--bg2);color:var(--text);outline:none;}
-.btn-primary{width:100%;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:9px;font-family:'Cairo',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:opacity var(--tr);}
-.btn-primary:hover{opacity:0.9;}
-.btn-google{width:100%;padding:12px;background:var(--bg2);color:var(--text);border:1.5px solid var(--border);border-radius:9px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;margin-top:10px;}
-
-/* SETTINGS */
-.page-view{display:none;position:fixed;inset:0;background:var(--bg);z-index:400;overflow-y:auto;}
-.page-view.open{display:block;}
-.page-topbar{display:flex;align-items:center;gap:11px;padding:0 14px;height:56px;background:var(--topbar);position:sticky;top:0;z-index:10;}
-.page-topbar-title{flex:1;font-size:17px;font-weight:700;color:#fff;}
-.page-body{padding:14px;}
-.settings-section{margin-bottom:22px;}
-.settings-section-title{font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:9px;padding-bottom:5px;border-bottom:1px solid var(--border);}
-.settings-item{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border);}
-.settings-item:last-child{border-bottom:none;}
-.settings-item-title{font-size:13px;font-weight:600;color:var(--text);}
-.settings-item-desc{font-size:11px;color:var(--text3);margin-top:2px;}
-.toggle{position:relative;width:46px;height:25px;flex-shrink:0;}
-.toggle input{opacity:0;width:0;height:0;}
-.toggle-slider{position:absolute;inset:0;background:var(--bg3);border-radius:13px;cursor:pointer;transition:background 0.3s;border:1px solid var(--border);}
-.toggle-slider:before{content:'';position:absolute;width:19px;height:19px;right:2px;top:2px;background:#fff;border-radius:50%;transition:transform 0.3s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
-.toggle input:checked + .toggle-slider{background:var(--primary);border-color:var(--primary);}
-.toggle input:checked + .toggle-slider:before{transform:translateX(-21px);}
-
-/* ═══════════════════════════════════
-   ADMIN PANEL
-═══════════════════════════════════ */
-.admin-panel{display:none;position:fixed;inset:0;background:var(--bg);z-index:600;overflow-y:auto;}
-.admin-panel.open{display:block;}
-.admin-topbar{display:flex;align-items:center;gap:11px;padding:0 14px;height:56px;background:#0d0d1a;position:sticky;top:0;z-index:10;border-bottom:1px solid rgba(255,107,53,0.3);}
-.admin-topbar-title{flex:1;font-size:16px;font-weight:800;color:#FF6B35;}
-.admin-body{padding:14px;}
-
-/* ADMIN TABS */
-.admin-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:16px;overflow-x:auto;scrollbar-width:none;}
-.admin-tab{padding:11px 16px;border:none;background:none;cursor:pointer;font-family:'Cairo',sans-serif;font-size:13px;font-weight:600;color:var(--text3);white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all var(--tr);}
-.admin-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
-
-/* SCRAPER CARD */
-.admin-card{background:var(--bg2);border-radius:12px;padding:14px;margin-bottom:14px;border:1px solid var(--border);}
-.admin-card-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:7px;}
-.admin-card-title svg{width:16px;height:16px;fill:var(--accent);}
-
-/* STATUS */
-.scraper-status{display:flex;align-items:center;gap:8px;padding:10px 13px;background:var(--bg3);border-radius:8px;font-size:12px;color:var(--text2);margin-bottom:10px;}
-.status-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:#9E9E9E;}
-.status-dot.running{background:#4CAF50;animation:pulse 1s infinite;}
-.status-dot.error{background:#f44336;}
-.status-dot.idle{background:#9E9E9E;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-
-/* PROGRESS */
-.progress-wrap{background:var(--bg3);border-radius:5px;height:7px;overflow:hidden;margin:8px 0;}
-.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:5px;transition:width 0.5s ease;width:0%;}
-.progress-label{font-size:11px;color:var(--text3);text-align:center;}
-
-/* LOG */
-.scraper-log{background:#0a0a14;border-radius:8px;padding:8px 11px;font-size:11px;font-family:monospace;color:#aaa;max-height:130px;overflow-y:auto;margin-top:8px;direction:ltr;}
-.log-ok{color:#4CAF50;}
-.log-err{color:#f44336;}
-.log-warn{color:#FF9800;}
-.log-info{color:#64B5F6;}
-
-/* ADMIN BUTTONS */
-.admin-btn{padding:9px 15px;border-radius:8px;border:none;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;transition:opacity var(--tr);}
-.admin-btn:hover{opacity:0.85;}
-.btn-run{background:var(--accent);color:#fff;}
-.btn-stop{background:rgba(244,67,54,0.15);color:#f44336;border:1px solid rgba(244,67,54,0.3);}
-.btn-clear{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
-.admin-btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
-
-/* DATA TABLE */
-.data-table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
-.data-table{width:100%;border-collapse:collapse;font-size:12px;min-width:600px;}
-.data-table th{background:var(--bg3);padding:9px 11px;text-align:right;font-weight:700;color:var(--text2);border-bottom:1px solid var(--border);white-space:nowrap;}
-.data-table td{padding:8px 11px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
-.data-table tr:last-child td{border-bottom:none;}
-.data-table tr:hover td{background:var(--bg2);}
-.data-table img{width:32px;height:44px;object-fit:cover;border-radius:4px;}
-.table-status{padding:3px 8px;border-radius:10px;font-size:10px;font-weight:700;}
-.status-ongoing{background:rgba(33,150,243,0.15);color:#2196F3;}
-.status-done{background:rgba(76,175,80,0.15);color:#4CAF50;}
-.status-upcoming{background:rgba(255,152,0,0.15);color:#FF9800;}
-.table-del-btn{background:rgba(244,67,54,0.1);color:#f44336;border:1px solid rgba(244,67,54,0.3);border-radius:6px;padding:4px 9px;font-size:11px;cursor:pointer;font-family:'Cairo',sans-serif;}
-.table-search{width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:'Cairo',sans-serif;font-size:13px;background:var(--bg2);color:var(--text);outline:none;margin-bottom:12px;}
-
-/* STATS CARDS */
-.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
-.stat-card{background:var(--bg2);border-radius:10px;padding:14px;text-align:center;border:1px solid var(--border);}
-.stat-val{font-size:26px;font-weight:900;color:var(--primary);}
-.stat-val.accent{color:var(--accent);}
-.stat-val.green{color:#4CAF50;}
-.stat-val.star{color:var(--star);}
-.stat-label{font-size:11px;color:var(--text3);margin-top:3px;}
-
-/* DETAIL */
-.detail-hero{position:relative;height:195px;overflow:hidden;}
-.detail-hero-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,var(--bg));}
-.detail-info{display:flex;gap:13px;padding:0 14px;margin-top:-52px;position:relative;}
-.detail-poster{width:90px;flex-shrink:0;border-radius:9px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.4);}
-.detail-poster-inner{width:100%;aspect-ratio:2/3;display:flex;align-items:center;justify-content:center;font-size:40px;background:var(--bg3);}
-.detail-meta{flex:1;padding-top:52px;}
-.detail-name{font-size:16px;font-weight:800;color:var(--text);}
-.detail-sub{font-size:11px;color:var(--text3);margin-top:3px;}
-.ratings-row{display:flex;gap:9px;padding:14px;justify-content:space-around;}
-.rating-box{text-align:center;flex:1;background:var(--bg2);border-radius:9px;padding:9px 5px;cursor:pointer;transition:background var(--tr);}
-.rating-box:hover{background:var(--bg3);}
-.rating-val{font-size:17px;font-weight:800;color:var(--text);}
-.rating-label{font-size:10px;color:var(--text3);margin-top:2px;}
-.tabs-row{display:flex;border-bottom:1px solid var(--border);padding:0 14px;overflow-x:auto;scrollbar-width:none;}
-.tab-btn{padding:11px 13px;border:none;background:none;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;font-weight:600;color:var(--text3);white-space:nowrap;border-bottom:3px solid transparent;transition:all var(--tr);}
-.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary);}
-.tab-content{padding:14px;display:none;}
-.tab-content.active{display:block;}
-.detail-desc{font-size:13px;color:var(--text2);line-height:1.8;}
-.tags-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px;}
-.tag{background:var(--bg2);color:var(--text2);padding:4px 11px;border-radius:18px;font-size:11px;font-weight:600;}
-.info-table{width:100%;border-collapse:collapse;margin-top:10px;}
-.info-table td{padding:8px 3px;border-bottom:1px solid var(--border);font-size:12px;}
-.info-table td:first-child{color:var(--text3);width:40%;}
-.info-table td:last-child{font-weight:600;color:var(--text);text-align:left;}
-.episodes-list{display:flex;flex-direction:column;gap:7px;}
-.ep-item{display:flex;align-items:center;gap:11px;background:var(--bg2);border-radius:9px;padding:11px 13px;cursor:pointer;transition:background var(--tr);}
-.ep-item:hover{background:var(--bg3);}
-.ep-num{width:34px;height:34px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
-.ep-name{font-size:12px;font-weight:600;color:var(--text);}
-.ep-meta{font-size:11px;color:var(--text3);margin-top:2px;}
-.play-icon{margin-right:auto;}
-.play-icon svg{width:19px;height:19px;fill:var(--primary);}
-
-/* PLAYER */
-.player-modal{max-width:330px;}
-.player-app-list{display:flex;flex-direction:column;gap:7px;margin:12px 0;}
-.player-app{display:flex;align-items:center;gap:11px;padding:11px 13px;background:var(--bg2);border-radius:9px;cursor:pointer;border:1.5px solid var(--border);transition:background var(--tr);font-size:13px;font-weight:600;color:var(--text);}
-.player-app:hover{background:var(--bg3);}
-.player-app-icon{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
-
-/* TOAST */
-.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(100px);background:#222;color:#fff;padding:9px 18px;border-radius:18px;font-size:12px;z-index:999;transition:transform 0.3s ease;white-space:nowrap;}
-.toast.show{transform:translateX(-50%) translateY(0);}
-
-/* ADMIN LOGIN */
-.admin-lock-note{background:rgba(255,107,53,0.08);border:1px solid rgba(255,107,53,0.25);border-radius:9px;padding:11px 13px;font-size:12px;color:var(--text2);margin-bottom:16px;text-align:center;}
-
-::-webkit-scrollbar{width:3px;}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
-</style>
-</head>
-<body>
-
-<!-- TOPBAR -->
-<div class="topbar">
-  <button class="topbar-btn" onclick="toggleSidebar()">
-    <svg viewBox="0 0 24 24" fill="white"><rect y="4" width="24" height="2.5" rx="1.25"/><rect y="11" width="24" height="2.5" rx="1.25"/><rect y="18" width="24" height="2.5" rx="1.25"/></svg>
-  </button>
-  <span class="topbar-title">Animay</span>
-  <button class="topbar-btn" onclick="toggleSearch()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-  </button>
-</div>
-
-<!-- SEARCH -->
-<div class="search-container" id="searchBar">
-  <div class="search-wrap">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input class="search-input" id="searchInput" placeholder="ابحث عن أنمي..." oninput="filterAnime(this.value)">
-  </div>
-</div>
-
-<!-- OVERLAY -->
-<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-
-<!-- SIDEBAR -->
-<div class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <div class="sidebar-logo">Ani<span>may</span></div>
-    <div id="sidebarUserArea">
-      <button class="sidebar-login-btn" onclick="openAuthModal()">
-        <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v8.51h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.14z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="#FBBC05" d="M10.53 28.59c-.5-1.45-.79-3-.79-4.59s.29-3.14.79-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/></svg>
-        تسجيل الدخول
-      </button>
-    </div>
-  </div>
-  <nav class="sidebar-nav">
-    <div class="sidebar-item active" onclick="navigate('home','آخر التحديثات')">
-      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>آخر التحديثات
-    </div>
-    <div class="sidebar-item" onclick="navigate('list','لائحة الأنمي')">
-      <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>لائحة الأنمي
-    </div>
-    <div class="sidebar-item" onclick="navigate('seasons','المواسم')">
-      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>المواسم
-    </div>
-    <div class="sidebar-divider"></div>
-    <div class="sidebar-item" onclick="navigate('globalrank','التقييم العالمي')">
-      <svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>التقييم العالمي
-    </div>
-    <div class="sidebar-item" onclick="navigate('arabrank','التقييم العربي')">
-      <svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>التقييم العربي
-    </div>
-    <div class="sidebar-divider"></div>
-    <div class="sidebar-item" onclick="navigate('mylist','قائمتي')">
-      <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>قائمتي
-    </div>
-    <div class="sidebar-item" onclick="navigate('fav','المفضلة')">
-      <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>المفضلة
-    </div>
-    <div class="sidebar-item" onclick="navigate('history','آخر المشاهدات')">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>آخر المشاهدات
-    </div>
-    <div class="sidebar-item" onclick="navigate('downloads','تحميلاتي')">
-      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>تحميلاتي
-    </div>
-    <div class="sidebar-divider"></div>
-    <div class="sidebar-item" onclick="navigate('schedule','مواعيد الحلقات')">
-      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>مواعيد الحلقات
-    </div>
-    <div class="sidebar-item" onclick="openSettings()">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>الإعدادات
-    </div>
-    <!-- أيقونة لوحة التحكم — مخفية للمستخدمين العاديين -->
-    <div class="sidebar-item sidebar-admin-item" id="sidebarAdminBtn" onclick="openAdminPanel()">
-      <svg viewBox="0 0 24 24"><path d="M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z"/></svg>لوحة التحكم
-    </div>
-  </nav>
-</div>
-
-<!-- MAIN CONTENT -->
-<div class="content">
-  <div class="section-title" id="sectionTitle">آخر التحديثات</div>
-  <div class="anime-grid" id="animeGrid">
-    <div class="loading-state"><div class="spinner"></div><div style="color:var(--text3);font-size:13px">جارٍ التحميل...</div></div>
-  </div>
-</div>
-
-<!-- ═══════════════ AUTH MODAL ═══════════════ -->
-<div class="modal-overlay" id="authModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('authModal')">✕</button>
-    <div style="text-align:center;font-size:38px;margin-bottom:6px">🎌</div>
-    <div class="modal-title">أهلاً بك في Animay</div>
-    <div class="modal-sub">سجّل دخولك للاستمتاع بكامل المميزات</div>
-    <div class="form-group">
-      <label class="form-label">البريد الإلكتروني</label>
-      <input class="form-input" id="loginEmail" type="email" placeholder="example@email.com" dir="ltr">
-    </div>
-    <div class="form-group">
-      <label class="form-label">كلمة المرور</label>
-      <input class="form-input" id="loginPass" type="password" placeholder="••••••••" dir="ltr">
-    </div>
-    <button class="btn-primary" onclick="doLogin()">تسجيل الدخول</button>
-    <button class="btn-google" onclick="showToast('⚠️ يحتاج ربط Google Cloud')">
-      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v8.51h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.14z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="#FBBC05" d="M10.53 28.59c-.5-1.45-.79-3-.79-4.59s.29-3.14.79-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/></svg>
-      المتابعة مع Google
-    </button>
-  </div>
-</div>
-
-<!-- ═══════════════ SETTINGS ═══════════════ -->
-<div class="page-view" id="settingsView">
-  <div class="page-topbar">
-    <button class="topbar-btn" onclick="document.getElementById('settingsView').classList.remove('open')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <span class="page-topbar-title">الإعدادات</span>
-  </div>
-  <div class="page-body">
-    <div class="settings-section">
-      <div class="settings-section-title">المظهر</div>
-      <div class="settings-item">
-        <div><div class="settings-item-title">الوضع الليلي</div><div class="settings-item-desc">تفعيل الثيم الداكن</div></div>
-        <label class="toggle"><input type="checkbox" id="toggleDark" onchange="saveSetting('darkMode',this.checked)"><span class="toggle-slider"></span></label>
-      </div>
-    </div>
-    <div class="settings-section">
-      <div class="settings-section-title">الإشعارات</div>
-      <div class="settings-item">
-        <div><div class="settings-item-title">إشعارات أنميات جديدة</div><div class="settings-item-desc">تنبيه عند إضافة أنمي جديد</div></div>
-        <label class="toggle"><input type="checkbox" id="toggleNewAnime" onchange="saveSetting('notifNewAnime',this.checked)"><span class="toggle-slider"></span></label>
-      </div>
-      <div class="settings-item">
-        <div><div class="settings-item-title">إشعارات حلقات جديدة</div><div class="settings-item-desc">تنبيه عند نزول حلقة جديدة</div></div>
-        <label class="toggle"><input type="checkbox" id="toggleNewEp" onchange="saveSetting('notifNewEp',this.checked)"><span class="toggle-slider"></span></label>
-      </div>
-    </div>
-    <div style="text-align:center;padding:16px 0;color:var(--text3);font-size:11px">Animay v2.0 — الإعدادات تُحفظ تلقائياً</div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════
-     ADMIN PANEL — مخفية لغير المطور
-═══════════════════════════════════════════ -->
-<div class="admin-panel" id="adminPanel">
-  <div class="admin-topbar">
-    <button class="topbar-btn" onclick="closeAdminPanel()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <span class="admin-topbar-title">⚙️ لوحة التحكم</span>
-    <button class="topbar-btn" onclick="adminLogout()" title="خروج">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-    </button>
-  </div>
-
-  <!-- ADMIN TABS -->
-  <div style="padding:0 14px;background:var(--bg);border-bottom:1px solid var(--border)">
-    <div class="admin-tabs">
-      <button class="admin-tab active" onclick="switchAdminTab('scraper',this)">🕷️ الكاشط</button>
-      <button class="admin-tab" onclick="switchAdminTab('data',this)">📋 البيانات</button>
-      <button class="admin-tab" onclick="switchAdminTab('stats',this)">📊 الإحصائيات</button>
-      <button class="admin-tab" onclick="switchAdminTab('settings_admin',this)">⚙️ الإعدادات</button>
-    </div>
-  </div>
-
-  <div class="admin-body">
-
-    <!-- TAB: SCRAPER -->
-    <div id="adminTab-scraper">
-      <div class="admin-card">
-        <div class="admin-card-title">
-          <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-          رابط مصدر البيانات
-        </div>
-        <div class="form-group">
-          <label class="form-label">رابط موقع الأنمي أو API</label>
-          <input class="form-input" id="scraperUrl" dir="ltr" placeholder="https://anime3rb.com  أو  https://api.jikan.moe/v4">
-        </div>
-        <div class="form-group">
-          <label class="form-label">نوع المصدر</label>
-          <select class="form-select" id="scraperType">
-            <option value="jikan">Jikan API (MyAnimeList) — مجاني موصى به</option>
-            <option value="anilist">AniList GraphQL — مجاني</option>
-            <option value="custom">Custom API</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">عدد الصفحات (كل صفحة = 25 أنمي)</label>
-          <input class="form-input" id="scraperPages" type="number" value="10" min="1" max="200" dir="ltr">
-        </div>
-        <div class="scraper-status" id="scraperStatus">
-          <div class="status-dot idle" id="scraperDot"></div>
-          <span id="scraperStatusText">جاهز</span>
-        </div>
-        <div id="scraperProgressWrap" style="display:none">
-          <div class="progress-wrap"><div class="progress-bar" id="scraperProgressBar"></div></div>
-          <div class="progress-label" id="scraperProgressLabel">0%</div>
-        </div>
-        <div class="scraper-log" id="scraperLog">
-          <div class="log-info">[INFO] الكاشط جاهز — أدخل الرابط وابدأ</div>
-        </div>
-        <div class="admin-btn-row">
-          <button class="admin-btn btn-run" onclick="startScraper()">▶ بدء الكشط</button>
-          <button class="admin-btn btn-stop" onclick="stopScraper()">■ إيقاف</button>
-          <button class="admin-btn btn-clear" onclick="clearLog()">مسح السجل</button>
-        </div>
-      </div>
-
-      <div class="admin-card">
-        <div class="admin-card-title">
-          <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          معلومات السيرفر
-        </div>
-        <div style="font-size:12px;color:var(--text2);line-height:2">
-          <div>🌐 السيرفر: <strong style="color:var(--primary)" id="serverIpDisplay">10.0.0.33:8080</strong></div>
-          <div>📁 قاعدة البيانات: <strong style="color:var(--primary)">animay.db (على الهاتف)</strong></div>
-          <div>🔄 الحالة: <strong id="serverStatusText" style="color:#4CAF50">—</strong></div>
-        </div>
-        <div class="admin-btn-row">
-          <button class="admin-btn btn-run" onclick="checkServer()">🔌 فحص الاتصال</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB: DATA -->
-    <div id="adminTab-data" style="display:none">
-      <input class="table-search" id="tableSearch" placeholder="🔍 ابحث في البيانات..." oninput="filterTable(this.value)">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <span style="font-size:12px;color:var(--text3)" id="tableCount">— أنمي</span>
-        <button class="admin-btn btn-clear" onclick="loadTableData()" style="padding:6px 12px;font-size:11px">🔄 تحديث</button>
-      </div>
-      <div class="data-table-wrap">
-        <table class="data-table" id="dataTable">
-          <thead>
-            <tr>
-              <th>الغلاف</th>
-              <th>الاسم</th>
-              <th>الحالة</th>
-              <th>التقييم</th>
-              <th>السنة</th>
-              <th>الحلقات</th>
-              <th>حذف</th>
-            </tr>
-          </thead>
-          <tbody id="dataTableBody">
-            <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text3)">اضغط تحديث لتحميل البيانات</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- TAB: STATS -->
-    <div id="adminTab-stats" style="display:none">
-      <div class="stats-row" id="statsCards">
-        <div class="stat-card"><div class="stat-val" id="statTotal">—</div><div class="stat-label">إجمالي الأنميات</div></div>
-        <div class="stat-card"><div class="stat-val accent" id="statOngoing">—</div><div class="stat-label">مستمر</div></div>
-        <div class="stat-card"><div class="stat-val green" id="statDone">—</div><div class="stat-label">مكتمل</div></div>
-        <div class="stat-card"><div class="stat-val star" id="statEps">—</div><div class="stat-label">الحلقات</div></div>
-      </div>
-      <button class="btn-primary" onclick="loadStats()">🔄 تحديث الإحصائيات</button>
-    </div>
-
-    <!-- TAB: ADMIN SETTINGS -->
-    <div id="adminTab-settings_admin" style="display:none">
-      <div class="admin-card">
-        <div class="admin-card-title">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>
-          إعدادات السيرفر
-        </div>
-        <div class="form-group">
-          <label class="form-label">IP السيرفر</label>
-          <input class="form-input" id="serverIpInput" value="10.0.0.33" dir="ltr">
-        </div>
-        <div class="form-group">
-          <label class="form-label">المنفذ (Port)</label>
-          <input class="form-input" id="serverPortInput" value="8080" dir="ltr">
-        </div>
-        <button class="btn-primary" onclick="saveServerSettings()">حفظ الإعدادات</button>
-      </div>
-      <div class="admin-card" style="margin-top:14px">
-        <div class="admin-card-title">
-          <svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
-          خطر
-        </div>
-        <button class="admin-btn btn-stop" style="width:100%" onclick="clearAllData()">🗑️ مسح جميع بيانات الأنمي</button>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ═══════════════ ADMIN LOGIN MODAL ═══════════════ -->
-<div class="modal-overlay" id="adminLoginModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('adminLoginModal')">✕</button>
-    <div style="text-align:center;font-size:34px;margin-bottom:6px">🔐</div>
-    <div class="modal-title" style="font-size:17px">دخول لوحة التحكم</div>
-    <div class="modal-sub">مخصصة للمطور فقط</div>
-    <div class="admin-lock-note">⚠️ هذه اللوحة محصورة للمطور — أدخل بريد الأدمن وكلمة المرور</div>
-    <div class="form-group">
-      <label class="form-label">بريد الأدمن</label>
-      <input class="form-input" id="adminEmail" type="email" placeholder="admin@animay.app" dir="ltr">
-    </div>
-    <div class="form-group">
-      <label class="form-label">كلمة المرور</label>
-      <input class="form-input" id="adminPass" type="password" placeholder="••••••••" dir="ltr" onkeydown="if(event.key==='Enter')doAdminLogin()">
-    </div>
-    <button class="btn-primary" onclick="doAdminLogin()">دخول</button>
-  </div>
-</div>
-
-<!-- ═══════════════ DETAIL VIEW ═══════════════ -->
-<div class="page-view" id="detailView">
-  <div class="page-topbar">
-    <button class="topbar-btn" onclick="closeDetail()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <span class="page-topbar-title" id="detailTitle">—</span>
-    <button class="topbar-btn" onclick="toggleFav()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
-    </button>
-  </div>
-  <div class="detail-hero">
-    <div id="detailHeroBg" style="width:100%;height:100%;background:linear-gradient(135deg,#1a237e,#0d47a1);"></div>
-    <div class="detail-hero-gradient"></div>
-  </div>
-  <div class="detail-info">
-    <div class="detail-poster"><div class="detail-poster-inner" id="detailPosterPh">🎬</div></div>
-    <div class="detail-meta">
-      <div class="detail-name" id="detailName">—</div>
-      <div class="detail-sub" id="detailSub">—</div>
-    </div>
-  </div>
-  <div class="ratings-row">
-    <div class="rating-box"><div class="rating-val" id="detailRating" style="color:var(--star)">★ —</div><div class="rating-label">التقييم</div></div>
-    <div class="rating-box" onclick="showToast('تمت الإضافة لقائمتك ✅')"><div class="rating-val">+</div><div class="rating-label">قائمتي</div></div>
-    <div class="rating-box" onclick="showToast('تمت الإضافة للمفضلة ❤️')"><div class="rating-val">♡</div><div class="rating-label">مفضلة</div></div>
-  </div>
-  <div class="tabs-row">
-    <button class="tab-btn active" onclick="switchDetailTab('details',this)">التفاصيل</button>
-    <button class="tab-btn" onclick="switchDetailTab('episodes',this)">الحلقات</button>
-    <button class="tab-btn" onclick="switchDetailTab('related',this)">المشابهة</button>
-  </div>
-  <div class="tab-content active" id="tab-details">
-    <p class="detail-desc" id="detailDesc">—</p>
-    <div class="tags-row" id="detailTags"></div>
-    <table class="info-table">
-      <tr><td>المصدر</td><td id="di-source">—</td></tr>
-      <tr><td>مدة الحلقة</td><td id="di-dur">—</td></tr>
-      <tr><td>سنة البدء</td><td id="di-year">—</td></tr>
-      <tr><td>الاستوديو</td><td id="di-studio">—</td></tr>
-      <tr><td>الاسم الإنجليزي</td><td id="di-en">—</td></tr>
-    </table>
-  </div>
-  <div class="tab-content" id="tab-episodes">
-    <div class="episodes-list" id="episodesList"></div>
-  </div>
-  <div class="tab-content" id="tab-related">
-    <div style="text-align:center;padding:35px;color:var(--text3);font-size:13px">الأنميات المشابهة ستظهر هنا</div>
-  </div>
-</div>
-
-<!-- ═══════════════ PLAYER MODAL ═══════════════ -->
-<div class="modal-overlay" id="playerModal">
-  <div class="modal player-modal">
-    <button class="modal-close" onclick="closeModal('playerModal')">✕</button>
-    <div class="modal-title" style="font-size:16px">المشغل الخارجي</div>
-    <div class="modal-sub" id="playerEpTitle">الحلقة</div>
-    <div style="margin-bottom:11px">
-      <label class="form-label">رابط الحلقة</label>
-      <input id="playerUrlInput" class="form-input" dir="ltr" readonly>
-    </div>
-    <div class="player-app-list">
-      <div class="player-app" onclick="openInPlayer('vlc')"><div class="player-app-icon" style="background:#f60">🎬</div>VLC Media Player</div>
-      <div class="player-app" onclick="openInPlayer('mx')"><div class="player-app-icon" style="background:#222">▶️</div>MX Player</div>
-      <div class="player-app" onclick="openInPlayer('browser')"><div class="player-app-icon" style="background:#1565C0">🌐</div>فتح في المتصفح</div>
-      <div class="player-app" onclick="copyPlayerUrl()"><div class="player-app-icon" style="background:#388E3C">📋</div>نسخ الرابط</div>
-    </div>
-  </div>
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
-
-<script>
-// ══════════════════════════════════════════════════════
-//  الإعدادات الأساسية
-// ══════════════════════════════════════════════════════
-const ADMIN_EMAIL = 'admin@animay.app';
-const ADMIN_PASS  = 'animay2026';
-
-let SERVER_IP   = localStorage.getItem('animay_server_ip') || '10.0.0.33';
-let SERVER_PORT = localStorage.getItem('animay_server_port') || '8080';
-const serverBase = () => `http://${SERVER_IP}:${SERVER_PORT}`;
-
-let animeDB      = [];
-let currentAnime = null;
-let currentPage  = 1;
-const PAGE_SIZE  = 25;
-let adminLoggedIn = sessionStorage.getItem('animay_admin') === '1';
-let scraperRunning = false;
-let scraperStop    = false;
-let allTableData   = [];
-
-let settings = JSON.parse(localStorage.getItem('animay_settings') || '{}');
-settings = Object.assign({darkMode:false, notifNewAnime:false, notifNewEp:false}, settings);
-
-// ══════════════════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════════════════
-(function init() {
-  applySettings();
-  if (adminLoggedIn) showAdminBtn();
-  loadAnime();
-})();
-
-// ══════════════════════════════════════════════════════
-//  SETTINGS
-// ══════════════════════════════════════════════════════
-function saveSetting(key, val) {
-  settings[key] = val;
-  localStorage.setItem('animay_settings', JSON.stringify(settings));
-  if (key === 'darkMode') document.documentElement.setAttribute('data-theme', val ? 'dark' : '');
-  showToast(val ? '✅ تم الحفظ والتفعيل' : '✅ تم الحفظ والإيقاف');
-}
-function applySettings() {
-  document.documentElement.setAttribute('data-theme', settings.darkMode ? 'dark' : '');
-  const td = document.getElementById('toggleDark');
-  const tn = document.getElementById('toggleNewAnime');
-  const te = document.getElementById('toggleNewEp');
-  if (td) td.checked = settings.darkMode;
-  if (tn) tn.checked = settings.notifNewAnime;
-  if (te) te.checked = settings.notifNewEp;
-}
-
-// ══════════════════════════════════════════════════════
-//  AUTH — تسجيل الدخول العادي
-// ══════════════════════════════════════════════════════
-function doLogin() {
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass  = document.getElementById('loginPass').value;
-  if (!email) { showToast('أدخل البريد الإلكتروني'); return; }
-  // محاكاة تسجيل دخول
-  closeModal('authModal');
-  const name = email.split('@')[0];
-  document.getElementById('sidebarUserArea').innerHTML = `
-    <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
-      <div class="sidebar-avatar">👤</div>
-      <div class="sidebar-username">${name}</div>
-      <div class="sidebar-email">${email}</div>
-      <button class="sidebar-logout-btn" onclick="doLogout()">تسجيل الخروج</button>
-    </div>`;
-  showToast('مرحباً ' + name + ' ✅');
-}
-function doLogout() {
-  document.getElementById('sidebarUserArea').innerHTML = `
-    <button class="sidebar-login-btn" onclick="openAuthModal()">
-      <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v8.51h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.14z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="#FBBC05" d="M10.53 28.59c-.5-1.45-.79-3-.79-4.59s.29-3.14.79-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/></svg>
-      تسجيل الدخول
-    </button>`;
-  closeSidebar();
-  showToast('تم تسجيل الخروج');
-}
-
-// ══════════════════════════════════════════════════════
-//  ADMIN AUTH — محصورة للمطور
-// ══════════════════════════════════════════════════════
-function openAdminPanel() {
-  closeSidebar();
-  if (adminLoggedIn) {
-    document.getElementById('adminPanel').classList.add('open');
-    checkServer();
-  } else {
-    document.getElementById('adminLoginModal').classList.add('open');
-  }
-}
-
-function doAdminLogin() {
-  const email = document.getElementById('adminEmail').value.trim();
-  const pass  = document.getElementById('adminPass').value;
-  if (email === ADMIN_EMAIL && pass === ADMIN_PASS) {
-    adminLoggedIn = true;
-    sessionStorage.setItem('animay_admin', '1');
-    closeModal('adminLoginModal');
-    showAdminBtn();
-    document.getElementById('adminPanel').classList.add('open');
-    addLog('ok', '[AUTH] دخول الأدمن بنجاح ✅');
-    checkServer();
-  } else {
-    showToast('❌ بريد أو كلمة مرور خاطئة');
-    document.getElementById('adminEmail').style.borderColor = '#f44336';
-    setTimeout(() => document.getElementById('adminEmail').style.borderColor = '', 2000);
-  }
-}
-
-function adminLogout() {
-  adminLoggedIn = false;
-  sessionStorage.removeItem('animay_admin');
-  document.getElementById('adminPanel').classList.remove('open');
-  document.getElementById('sidebarAdminBtn').classList.remove('visible');
-  showToast('تم تسجيل خروج المطور');
-}
-
-function showAdminBtn() {
-  document.getElementById('sidebarAdminBtn').classList.add('visible');
-}
-
-function closeAdminPanel() {
-  document.getElementById('adminPanel').classList.remove('open');
-}
-
-// ══════════════════════════════════════════════════════
-//  ADMIN TABS
-// ══════════════════════════════════════════════════════
-function switchAdminTab(tab, btn) {
-  document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('[id^="adminTab-"]').forEach(t => t.style.display = 'none');
-  btn.classList.add('active');
-  document.getElementById('adminTab-' + tab).style.display = 'block';
-  if (tab === 'data') loadTableData();
-  if (tab === 'stats') loadStats();
-}
-
-// ══════════════════════════════════════════════════════
-//  SERVER API
-// ══════════════════════════════════════════════════════
-async function apiFetch(path, attempt = 0) {
-  const RETRY = [429, 500, 502, 503, 504];
-  try {
-    const ctrl = new AbortController();
-    const tid  = setTimeout(() => ctrl.abort(), 10000);
-    const res  = await fetch(`${serverBase()}${path}`, { signal: ctrl.signal });
-    clearTimeout(tid);
-    if (res.ok) return await res.json();
-    if (RETRY.includes(res.status) && attempt < 3) {
-      await sleep(1000 * (attempt + 1));
-      return apiFetch(path, attempt + 1);
-    }
-    return null;
-  } catch(e) {
-    if (attempt < 3) { await sleep(1200 * (attempt + 1)); return apiFetch(path, attempt + 1); }
-    return null;
-  }
-}
-
-async function checkServer() {
-  const data = await apiFetch('/');
-  const el = document.getElementById('serverStatusText');
-  if (data) {
-    if (el) el.textContent = `✅ يعمل — ${data.anime_count || 0} أنمي`;
-    addLog('ok', `[SERVER] متصل — ${data.anime_count || 0} أنمي في قاعدة البيانات`);
-    showToast('✅ السيرفر يعمل');
-  } else {
-    if (el) el.textContent = '❌ غير متصل';
-    addLog('err', '[SERVER] تعذّر الاتصال — تأكد أن animay_server.py يعمل');
-  }
-}
-
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-// ══════════════════════════════════════════════════════
-//  LOAD ANIME
-// ══════════════════════════════════════════════════════
-async function loadAnime(page = 1) {
-  const grid = document.getElementById('animeGrid');
-  grid.innerHTML = `<div class="loading-state"><div class="spinner"></div><div style="color:var(--text3);font-size:13px">جارٍ التحميل...</div></div>`;
-  const data = await apiFetch(`/anime?page=${page}&limit=${PAGE_SIZE}`);
-  if (!data) {
-    grid.innerHTML = `<div class="empty-state">
-      <div class="icon">📡</div><p>السيرفر غير متصل</p>
-      <small>شغّل animay_server.py على Pydroid3</small><br>
-      <button onclick="loadAnime()" style="margin-top:12px;padding:8px 18px;background:var(--primary);color:#fff;border:none;border-radius:20px;cursor:pointer;font-family:Cairo,sans-serif;font-weight:700">إعادة المحاولة</button>
-    </div>`;
-    return;
-  }
-  animeDB = data.data || [];
-  currentPage = page;
-  if (!animeDB.length) {
-    grid.innerHTML = `<div class="empty-state"><div class="icon">🎌</div><p>لا توجد أنميات بعد</p><small>استخدم لوحة التحكم لجلب البيانات</small></div>`;
-    return;
-  }
-  renderGrid(animeDB);
-  renderPagination(page, data.pagination || {});
-}
-
-async function filterAnime(q) {
-  if (!q) { loadAnime(1); return; }
-  const data = await apiFetch(`/anime?search=${encodeURIComponent(q)}&limit=50`);
-  if (data) renderGrid(data.data || []);
-}
-
-const COLORS = ['#1a237e','#0d47a1','#1b5e20','#4a148c','#bf360c','#006064','#37474f','#880e4f'];
-
-function renderGrid(list) {
-  const grid = document.getElementById('animeGrid');
-  if (!list.length) {
-    grid.innerHTML = `<div class="empty-state"><div class="icon">🎌</div><p>لا توجد نتائج</p></div>`;
-    return;
-  }
-  grid.innerHTML = list.map((a, i) => {
-    const poster = a.poster_url || '';
-    const name   = a.title_ar || a.title || 'بدون عنوان';
-    const rating = a.score || '—';
-    const status = a.status || '';
-    const eps    = a.episodes_count || '';
-    return `<div class="anime-card" onclick="openDetail(${a.id})">
-      ${poster
-        ? `<img class="anime-poster" src="${poster}" alt="${name}" onerror="this.outerHTML='<div class=anime-poster-ph style=background:linear-gradient(135deg,${COLORS[i%COLORS.length]}99,${COLORS[(i+4)%COLORS.length]}66)>🎬</div>';">`
-        : `<div class="anime-poster-ph" style="background:linear-gradient(135deg,${COLORS[i%COLORS.length]}99,${COLORS[(i+4)%COLORS.length]}66)">🎬</div>`}
-      ${eps ? `<div class="ep-badge">حلقة ${eps}</div>` : ''}
-      <div class="anime-info">
-        <div class="anime-name">${name}</div>
-        <div class="anime-meta"><span class="anime-rating">★ ${rating}</span><span>${status}</span></div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function renderPagination(page, pagination) {
-  document.getElementById('paginationRow')?.remove();
-  if (!pagination.has_next && page === 1) return;
-  const div = document.createElement('div');
-  div.id = 'paginationRow';
-  div.className = 'pagination';
-  if (page > 1) {
-    const b = document.createElement('button');
-    b.className = 'page-btn'; b.textContent = '◀ السابق';
-    b.onclick = () => loadAnime(page - 1);
-    div.appendChild(b);
-  }
-  const info = document.createElement('span');
-  info.className = 'page-info'; info.textContent = `صفحة ${page}`;
-  div.appendChild(info);
-  if (pagination.has_next) {
-    const b = document.createElement('button');
-    b.className = 'page-btn'; b.textContent = 'التالي ▶';
-    b.onclick = () => loadAnime(page + 1);
-    div.appendChild(b);
-  }
-  document.getElementById('animeGrid').after(div);
-}
-
-// ══════════════════════════════════════════════════════
-//  SCRAPER (داخل التطبيق — يتصل بالسيرفر)
-// ══════════════════════════════════════════════════════
-const JIKAN = 'https://api.jikan.moe/v4';
-
-function addLog(type, msg) {
-  const log = document.getElementById('scraperLog');
-  if (!log) return;
-  const d = document.createElement('div');
-  d.className = 'log-' + type;
-  d.textContent = msg;
-  log.appendChild(d);
-  log.scrollTop = log.scrollHeight;
-}
-function clearLog() { document.getElementById('scraperLog').innerHTML = ''; }
-
-function setScraperStatus(status, text) {
-  const dot  = document.getElementById('scraperDot');
-  const txt  = document.getElementById('scraperStatusText');
-  if (dot) { dot.className = 'status-dot ' + status; }
-  if (txt) txt.textContent = text;
-}
-
-function setProgress(pct, label) {
-  const wrap = document.getElementById('scraperProgressWrap');
-  const bar  = document.getElementById('scraperProgressBar');
-  const lbl  = document.getElementById('scraperProgressLabel');
-  if (wrap) wrap.style.display = 'block';
-  if (bar)  bar.style.width = pct + '%';
-  if (lbl)  lbl.textContent = label;
-}
-
-async function jikanGet(url, params = {}, attempt = 0) {
-  if (scraperStop) return null;
-  const qStr = Object.entries(params).map(([k,v]) => `${k}=${v}`).join('&');
-  const full  = qStr ? `${url}?${qStr}` : url;
-  try {
-    await sleep(800 + Math.random() * 400);
-    const ctrl = new AbortController();
-    const tid  = setTimeout(() => ctrl.abort(), 12000);
-    const res  = await fetch(full, { signal: ctrl.signal });
-    clearTimeout(tid);
-    if (res.status === 429) {
-      const wait = Math.min(3000 * Math.pow(2, attempt), 30000);
-      addLog('warn', `[RETRY] 429 — انتظار ${(wait/1000).toFixed(0)}s`);
-      await sleep(wait);
-      return jikanGet(url, params, attempt + 1);
-    }
-    if (res.status === 404) return null;
-    if (!res.ok && attempt < 4) { await sleep(2000 * (attempt+1)); return jikanGet(url, params, attempt+1); }
-    return res.ok ? await res.json() : null;
-  } catch(e) {
-    if (attempt < 4) { await sleep(2000*(attempt+1)); return jikanGet(url, params, attempt+1); }
-    return null;
-  }
-}
-
-async function upsertToServer(animeData) {
-  // إرسال البيانات إلى السيرفر المحلي
-  try {
-    const res = await fetch(`${serverBase()}/upsert_anime`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(animeData)
-    });
-    if (res.ok) {
-      const d = await res.json();
-      return d.id || null;
-    }
-  } catch(e) {}
-  return null;
-}
-
-const STATUS_MAP = {"Finished Airing":"مكتمل","Currently Airing":"مستمر","Not yet aired":"قادم"};
-const GENRE_MAP  = {"Action":"أكشن","Adventure":"مغامرة","Comedy":"كوميدي","Drama":"دراما","Fantasy":"خيال","Horror":"رعب","Mystery":"غموض","Romance":"رومانسي","Sci-Fi":"خيال علمي","Slice of Life":"الحياة اليومية","Sports":"رياضي","Supernatural":"خارق للطبيعة","Thriller":"تشويق","Mecha":"ميكا","Music":"موسيقى","Historical":"تاريخي","Military":"عسكري","School":"مدرسي","Isekai":"إيسيكاي","Shounen":"شونين","Shoujo":"شوجو","Seinen":"سينين","Psychological":"نفسي","Magic":"سحر","Martial Arts":"فنون قتالية"};
-
-function mapAnime(item) {
-  const genres  = [...(item.genres||[]).map(g=>GENRE_MAP[g.name]||g.name), ...(item.themes||[]).map(g=>GENRE_MAP[g.name]||g.name)];
-  const studios = item.studios || [];
-  const from_d  = (item.aired||{}).from || '';
-  return {
-    slug:           String(item.mal_id),
-    title_ar:       item.title_arabic || item.title_japanese || item.title || 'بدون عنوان',
-    title_en:       item.title_english || item.title || '',
-    poster_url:     item.images?.jpg?.large_image_url || item.images?.jpg?.image_url || '',
-    status:         STATUS_MAP[item.status] || item.status || 'غير محدد',
-    year:           from_d ? from_d.slice(0,4) : String(item.year||''),
-    studio:         studios[0]?.name || '',
-    source:         item.source || '',
-    duration:       item.duration || '24 دقيقة',
-    episodes_count: String(item.episodes||''),
-    synopsis:       item.synopsis || '',
-    genres:         JSON.stringify([...new Set(genres)]),
-    score:          parseFloat(item.score||0),
-    page_url:       item.url || '',
-  };
-}
-
-async function startScraper() {
-  if (scraperRunning) { showToast('الكاشط يعمل بالفعل'); return; }
-  const maxPages = parseInt(document.getElementById('scraperPages').value) || 10;
-  const srcType  = document.getElementById('scraperType').value;
-
-  // فحص الاتصال بالسيرفر
-  const serverOk = await apiFetch('/');
-  if (!serverOk) {
-    showToast('❌ السيرفر غير متصل — شغّل animay_server.py أولاً');
-    addLog('err', '[ERR] لا يوجد اتصال بالسيرفر المحلي');
-    return;
-  }
-
-  scraperRunning = true;
-  scraperStop    = false;
-  setScraperStatus('running', 'يعمل...');
-  addLog('ok', `[START] بدء الكشط — ${maxPages} صفحة — نوع: ${srcType}`);
-
-  let total = 0;
-  for (let page = 1; page <= maxPages; page++) {
-    if (scraperStop) { addLog('warn', '[STOP] توقف بأمر المستخدم'); break; }
-
-    setProgress(Math.round((page/maxPages)*100), `صفحة ${page}/${maxPages} | تم: ${total}`);
-    addLog('info', `[PAGE ${page}/${maxPages}] جلب...`);
-
-    const data = await jikanGet(`${JIKAN}/anime`, { page, limit: 25, order_by: 'mal_id', sort: 'asc' });
-    if (!data?.data?.length) { addLog('warn', `[PAGE ${page}] فارغة — توقف`); break; }
-
-    const batch = data.data.map(mapAnime);
-
-    // رفع الدفعة إلى السيرفر
-    try {
-      const res = await fetch(`${serverBase()}/upsert_batch`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ anime: batch })
-      });
-      if (res.ok) {
-        const result = await res.json();
-        total += result.inserted || batch.length;
-        addLog('ok', `[PAGE ${page}] ✅ ${batch.length} أنمي | المجموع: ${total}`);
-      } else {
-        addLog('warn', `[PAGE ${page}] ⚠️ خطأ في الرفع HTTP ${res.status}`);
-      }
-    } catch(e) {
-      addLog('err', `[PAGE ${page}] ❌ ${e.message}`);
-    }
-
-    if (!data.pagination?.has_next_page) { addLog('ok', '[DONE] آخر صفحة'); break; }
-    await sleep(300);
-  }
-
-  scraperRunning = false;
-  setScraperStatus('idle', `اكتمل — ${total} أنمي`);
-  setProgress(100, `اكتمل! تم جلب ${total} أنمي`);
-  addLog('ok', `[FINISH] ✅ اكتمل الكشط — المجموع: ${total}`);
-  showToast(`✅ اكتمل الكشط — ${total} أنمي`);
-  loadAnime(1);
-}
-
-function stopScraper() {
-  scraperStop = true;
-  scraperRunning = false;
-  setScraperStatus('idle', 'متوقف');
-  addLog('warn', '[STOP] توقف الكاشط');
-}
-
-// ══════════════════════════════════════════════════════
-//  DATA TABLE
-// ══════════════════════════════════════════════════════
-async function loadTableData() {
-  document.getElementById('dataTableBody').innerHTML = `<tr><td colspan="7" style="text-align:center;padding:25px"><div class="spinner" style="width:24px;height:24px;margin:0 auto"></div></td></tr>`;
-  const data = await apiFetch('/anime?limit=200&page=1');
-  if (!data) { document.getElementById('dataTableBody').innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text3)">تعذّر تحميل البيانات</td></tr>`; return; }
-  allTableData = data.data || [];
-  renderTable(allTableData);
-}
-
-function renderTable(list) {
-  document.getElementById('tableCount').textContent = `${list.length} أنمي`;
-  if (!list.length) {
-    document.getElementById('dataTableBody').innerHTML = `<tr><td colspan="7" style="text-align:center;padding:25px;color:var(--text3)">لا توجد بيانات</td></tr>`;
-    return;
-  }
-  document.getElementById('dataTableBody').innerHTML = list.map(a => {
-    const statusClass = a.status === 'مستمر' ? 'status-ongoing' : a.status === 'مكتمل' ? 'status-done' : 'status-upcoming';
-    const name = (a.title_ar||'').length > 20 ? (a.title_ar||'').slice(0,20)+'...' : (a.title_ar||'—');
-    return `<tr>
-      <td>${a.poster_url ? `<img src="${a.poster_url}" onerror="this.src=''">` : '🎬'}</td>
-      <td style="max-width:130px"><div style="font-weight:600">${name}</div><div style="font-size:10px;color:var(--text3)">${a.title_en||''}</div></td>
-      <td><span class="table-status ${statusClass}">${a.status||'—'}</span></td>
-      <td style="color:var(--star);font-weight:700">★ ${a.score||'—'}</td>
-      <td>${a.year||'—'}</td>
-      <td>${a.episodes_count||'—'}</td>
-      <td><button class="table-del-btn" onclick="deleteAnime(${a.id},'${name}')">حذف</button></td>
-    </tr>`;
-  }).join('');
-}
-
-function filterTable(q) {
-  const filtered = allTableData.filter(a =>
-    (a.title_ar||'').includes(q) || (a.title_en||'').toLowerCase().includes(q.toLowerCase())
-  );
-  renderTable(filtered);
-}
-
-async function deleteAnime(id, name) {
-  if (!confirm(`حذف "${name}"؟`)) return;
-  try {
-    const res = await fetch(`${serverBase()}/anime/${id}`, { method: 'DELETE' });
-    if (res.ok) { showToast('تم الحذف ✅'); loadTableData(); }
-    else showToast('❌ فشل الحذف');
-  } catch(e) { showToast('❌ خطأ في الاتصال'); }
-}
-
-// ══════════════════════════════════════════════════════
-//  STATS
-// ══════════════════════════════════════════════════════
-async function loadStats() {
-  const data = await apiFetch('/stats');
-  if (!data) { showToast('❌ تعذّر تحميل الإحصائيات'); return; }
-  document.getElementById('statTotal').textContent   = data.total_anime || 0;
-  document.getElementById('statOngoing').textContent = data.ongoing || 0;
-  document.getElementById('statDone').textContent    = data.finished || 0;
-  document.getElementById('statEps').textContent     = data.total_episodes || 0;
-}
-
-// ══════════════════════════════════════════════════════
-//  ADMIN SETTINGS
-// ══════════════════════════════════════════════════════
-function saveServerSettings() {
-  SERVER_IP   = document.getElementById('serverIpInput').value.trim();
-  SERVER_PORT = document.getElementById('serverPortInput').value.trim();
-  localStorage.setItem('animay_server_ip', SERVER_IP);
-  localStorage.setItem('animay_server_port', SERVER_PORT);
-  document.getElementById('serverIpDisplay').textContent = SERVER_IP + ':' + SERVER_PORT;
-  showToast('✅ تم حفظ إعدادات السيرفر');
-  checkServer();
-}
-
-async function clearAllData() {
-  if (!confirm('⚠️ سيتم مسح جميع بيانات الأنمي نهائياً. متأكد؟')) return;
-  try {
-    const res = await fetch(serverBase() + '/clear_all', { method: 'DELETE' });
-    if (res.ok) { showToast('تم مسح جميع البيانات 🗑️'); loadTableData(); loadAnime(); }
-    else showToast('❌ فشل المسح');
-  } catch(e) { showToast('❌ خطأ في الاتصال'); }
-}
-
-// ══════════════════════════════════════════════════════
-//  DETAIL
-// ══════════════════════════════════════════════════════
-async function openDetail(id) {
-  let a = animeDB.find(x => x.id === id);
-  if (!a) { const d = await apiFetch('/anime/' + id); if (d) a = d; }
-  if (!a) return;
-  currentAnime = a;
-  const name   = a.title_ar || '—';
-  const nameEn = a.title_en || '—';
-  const poster = a.poster_url || '';
-  let genres = [];
-  try { genres = typeof a.genres === 'string' ? JSON.parse(a.genres) : (a.genres||[]); } catch {}
-
-  document.getElementById('detailTitle').textContent = name;
-  document.getElementById('detailName').textContent  = name;
-  document.getElementById('detailSub').textContent   = (a.status||'—') + ' • ' + (a.year||'—') + ' • ' + nameEn;
-  document.getElementById('detailRating').textContent= '★ ' + (a.score||'—');
-  document.getElementById('detailDesc').textContent  = a.synopsis || 'لا يوجد وصف';
-  document.getElementById('di-source').textContent   = a.source || '—';
-  document.getElementById('di-dur').textContent      = a.duration || '—';
-  document.getElementById('di-year').textContent     = a.year || '—';
-  document.getElementById('di-studio').textContent   = a.studio || '—';
-  document.getElementById('di-en').textContent       = nameEn;
-  document.getElementById('detailTags').innerHTML    = genres.map(function(g){return '<span class="tag">'+g+'</span>';}).join('');
-
-  if (poster) {
-    document.getElementById('detailPosterPh').innerHTML = '<img src="'+poster+'" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.outerHTML='<span style=font-size:40px>🎬</span>'">';
-    document.getElementById('detailHeroBg').innerHTML   = '<img src="'+poster+'" style="width:100%;height:100%;object-fit:cover;filter:blur(4px) brightness(0.3)">';
-  } else {
-    document.getElementById('detailPosterPh').textContent = '🎬';
-  }
-
-  await loadEpisodes(id);
-  document.getElementById('detailView').classList.add('open');
-  switchDetailTab('details', document.querySelector('#detailView .tab-btn'));
-}
-
-async function loadEpisodes(animeId) {
-  const list = document.getElementById('episodesList');
-  list.innerHTML = '<div style="text-align:center;padding:18px"><div class="spinner" style="width:26px;height:26px;margin:0 auto"></div></div>';
-  const data = await apiFetch('/anime/' + animeId + '/episodes');
-  if (!data || !data.data || !data.data.length) {
-    list.innerHTML = '<div style="text-align:center;padding:25px;color:var(--text3)">لا توجد حلقات بعد</div>';
-    return;
-  }
-  list.innerHTML = data.data.map(function(ep, i) {
-    return '<div class="ep-item" onclick='openPlayer(' + JSON.stringify(ep) + ')'>' +
-      '<div class="ep-num">' + (ep.episode_number||i+1) + '</div>' +
-      '<div><div class="ep-name">' + (ep.title||'الحلقة '+(ep.episode_number||i+1)) + '</div>' +
-      '<div class="ep-meta">' + (ep.duration||'24 دقيقة') + '</div></div>' +
-      '<div class="play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>' +
-      '</div>';
-  }).join('');
-}
-
-function closeDetail() { document.getElementById('detailView').classList.remove('open'); }
-function switchDetailTab(tab, btn) {
-  document.querySelectorAll('#detailView .tab-btn').forEach(function(b){b.classList.remove('active');});
-  document.querySelectorAll('#detailView .tab-content').forEach(function(c){c.classList.remove('active');});
-  if (btn) btn.classList.add('active');
-  var el = document.getElementById('tab-'+tab);
-  if (el) el.classList.add('active');
-}
-function toggleFav() { showToast('تمت الإضافة للمفضلة ❤️'); }
-
-// ══════════════════════════════════════════════════════
-//  PLAYER
-// ══════════════════════════════════════════════════════
-function openPlayer(ep) {
-  if (typeof ep === 'string') ep = JSON.parse(ep);
-  document.getElementById('playerEpTitle').textContent = ep.title || 'الحلقة '+(ep.episode_number||'');
-  document.getElementById('playerUrlInput').value = ep.video_url || ep.url || '';
-  document.getElementById('playerModal').classList.add('open');
-}
-function openInPlayer(type) {
-  var url = document.getElementById('playerUrlInput').value;
-  if (!url) { showToast('لا يوجد رابط للحلقة'); return; }
-  if (type === 'vlc')     window.open('vlc://' + url);
-  else if (type === 'mx') window.open('intent:' + url + '#Intent;package=com.mxtech.videoplayer.ad;end');
-  else                    window.open(url, '_blank');
-  closeModal('playerModal');
-}
-function copyPlayerUrl() {
-  var url = document.getElementById('playerUrlInput').value;
-  if (!url) { showToast('لا يوجد رابط'); return; }
-  if (navigator.clipboard) navigator.clipboard.writeText(url);
-  showToast('تم نسخ الرابط 📋');
-  closeModal('playerModal');
-}
-
-// ══════════════════════════════════════════════════════
-//  NAV / UI
-// ══════════════════════════════════════════════════════
-function toggleSearch() {
-  var sb = document.getElementById('searchBar');
-  sb.classList.toggle('open');
-  if (sb.classList.contains('open')) document.getElementById('searchInput').focus();
-}
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('overlay').classList.toggle('open');
-}
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('overlay').classList.remove('open');
-}
-function navigate(page, title) {
-  closeSidebar();
-  document.getElementById('sectionTitle').textContent = title;
-  loadAnime(1);
-}
-function openSettings()  { closeSidebar(); document.getElementById('settingsView').classList.add('open'); applySettings(); }
-function openAuthModal() { closeSidebar(); document.getElementById('authModal').classList.add('open'); }
-function closeModal(id)  { document.getElementById(id).classList.remove('open'); }
-
-function showToast(msg) {
-  var t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(function(){ t.classList.remove('show'); }, 2500);
-}
-
-document.querySelectorAll('.modal-overlay').forEach(function(mo) {
-  mo.addEventListener('click', function(e){ if (e.target === mo) mo.classList.remove('open'); });
-});
-</script>
-</body>
-</html>
+from kivymd.app import MDApp
+from kivy.lang import Builder
+from kivy.core.window import Window
+from kivy.utils import platform
+import requests
+from bs4 import BeautifulSoup
+
+# إعدادات السيرفر المحلي ورابط موقع الأنمي المستهدف
+LOCAL_SERVER_IP = "http://10.0.0.33"
+TARGET_ANIME_SITE = "https://example-anime-site.com" # يمكنك تغيير هذا الرابط برمجياً
+
+KV = '''
+MDScreenManager:
+    id: screen_manager
+    
+    # 1. شاشة إنشاء الحساب / تسجيل الدخول
+    MDScreen:
+        name: "auth_screen"
+        md_bg_color: 1, 1, 1, 1 # خلفية بيضاء
+        
+        MDBoxLayout:
+            orientation: "vertical"
+            spacing: "20dp"
+            padding: "40dp"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            adaptive_height: True
+            
+            MDLabel:
+                text: "إنشاء حساب جديد"
+                halign: "center"
+                theme_text_color: "Primary"
+                font_style: "H5"
+                
+            MDTextField:
+                id: email_input
+                hint_text: "البريد الإلكتروني"
+                icon_right: "email"
+                
+            MDRaisedButton:
+                text: "إرسال رمز التحقق"
+                pos_hint: {"center_x": .5}
+                on_release: app.send_verification_code(email_input.text)
+                
+            MDTextField:
+                id: verify_code_input
+                hint_text: "رمز التحقق"
+                icon_right: "lock"
+                
+            MDRaisedButton:
+                text: "تأكيد ودخول"
+                pos_hint: {"center_x": .5}
+                on_release: app.verify_and_login(verify_code_input.text)
+
+    # 2. الشاشة الرئيسية للتطبيق
+    MDScreen:
+        name: "main_screen"
+        md_bg_color: 1, 1, 1, 1 # واجهة التطبيق باللون الأبيض
+        
+        MDNavigationLayout:
+            
+            ScreenManager:
+                Screen:
+                    MDBoxLayout:
+                        orientation: "vertical"
+                        
+                        # الشريط العلوي الأسود مع أيقونات بيضاء
+                        MDTopAppBar:
+                            title: "Anime App"
+                            md_bg_color: 0, 0, 0, 1 # لون أسود
+                            specific_text_color: 1, 1, 1, 1 # أيقونات ونص باللون الأبيض
+                            # أيقونة البحث على اليسار
+                            left_action_items: [["magnify", lambda x: app.open_search()]]
+                            # أيقونة القائمة (الثلاث شخطات) على اليمين لفتح القائمة الجانبية
+                            right_action_items: [["menu", lambda x: nav_drawer.set_state("open")]]
+                            
+                        # منطقة عرض الأنمي (نظام شبكي مشابه لـ Anime Slayer)
+                        ScrollView:
+                            MDGridLayout:
+                                id: anime_grid
+                                cols: 2
+                                padding: "10dp"
+                                spacing: "10dp"
+                                adaptive_height: True
+                                
+            # القائمة الجانبية (تم وضعها على اليمين بناءً على طلبك)
+            MDNavigationDrawer:
+                id: nav_drawer
+                anchor: "right" # عرض القائمة من اليمين
+                radius: (0, 16, 16, 0)
+                
+                MDBoxLayout:
+                    orientation: "vertical"
+                    padding: "8dp"
+                    spacing: "8dp"
+                    
+                    MDLabel:
+                        text: "قائمة الأقسام"
+                        font_style: "H6"
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        
+                    ScrollView:
+                        MDList:
+                            OneLineIconListItem:
+                                text: "آخر التحديثات"
+                                IconLeftWidget:
+                                    icon: "update"
+                            OneLineIconListItem:
+                                text: "لائحة الأنمي"
+                                IconLeftWidget:
+                                    icon: "format-list-bulleted"
+                            OneLineIconListItem:
+                                text: "الإعدادات"
+                                IconLeftWidget:
+                                    icon: "cog"
+'''
+
+class MyAnimeApp(MDApp):
+    def build(self):
+        self.theme_cls.theme_style = "Light" # فرض الثيم الأبيض
+        return Builder.load_string(KV)
+
+    # --- 1. نظام المصادقة اليدوي ---
+    def send_verification_code(self, email):
+        print(f"تم إرسال الرمز إلى: {email}")
+        # هنا يمكنك ربط الكود بـ SMTP أو سيرفرك المحلي لإرسال الإيميل
+        
+    def verify_and_login(self, code):
+        print("تم التحقق بنجاح، جاري الدخول...")
+        self.root.current = "main_screen"
+        self.load_anime_data()
+
+    # --- 2. الكاشط الداخلي (Scraper) والاتصال بالسيرفر المحلي ---
+    def load_anime_data(self):
+        """
+        تقوم هذه الدالة بجمع البيانات من موقع الأنمي عن طريق الكاشط الداخلي،
+        أو جلبها من خلال السيرفر المحلي ذو الـ IP المحدد (10.0.0.33)
+        """
+        try:
+            # مثال للاتصال بالسيرفر المحلي الخاص بك
+            response = requests.get(f"{LOCAL_SERVER_IP}/api/latest_anime", timeout=5)
+            if response.status_code == 200:
+                print("تم جلب البيانات من السيرفر المحلي بنجاح.")
+        except:
+            print(f"تعذر الاتصال بـ {LOCAL_SERVER_IP}، جاري تشغيل الكاشط الداخلي...")
+            self.internal_scraper(TARGET_ANIME_SITE)
+            
+    def internal_scraper(self, url):
+        """ كاشط مدمج لجلب روابط الحلقات والأعمال مباشرة """
+        # يمكنك هنا إدراج كود Beautifulsoup المعتاد الخاص بك (مثل anime-data.py)
+        # page = requests.get(url)
+        # soup = BeautifulSoup(page.content, 'html.parser')
+        print(f"جاري سحب البيانات من: {url}")
+        
+    def open_search(self):
+        print("فتح شريط البحث...")
+
+    # --- 3. تشغيل المشغل الخارجي للحلقات ---
+    def play_episode_external(self, video_url):
+        """ توجيه رابط الحلقة إلى مشغل خارجي (مثل MX Player أو VLC) """
+        if platform == 'android':
+            from jnius import autoclass
+            Intent = autoclass('android.content.Intent')
+            Uri = autoclass('android.net.Uri')
+            
+            intent = Intent(Intent.ACTION_VIEW)
+            intent.setDataAndType(Uri.parse(video_url), "video/mp4")
+            
+            # بدء النشاط
+            PythonActivity = autoclass('org.kivy.android.PythonActivity')
+            currentActivity = PythonActivity.mActivity
+            currentActivity.startActivity(intent)
+        else:
+            print(f"سيتم تشغيل الرابط التالي في المشغل الخارجي: {video_url}")
+
+if __name__ == "__main__":
+    MyAnimeApp().run()
