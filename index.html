@@ -1,177 +1,261 @@
-from kivymd.app import MDApp
-from kivy.lang import Builder
-from kivy.core.window import Window
-from kivy.utils import platform
-import requests
-from bs4 import BeautifulSoup
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* الإعدادات العامة والواجهة البيضاء */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #ffffff; 
+            color: #333;
+            overflow-x: hidden;
+        }
 
-# إعدادات السيرفر المحلي ورابط موقع الأنمي المستهدف
-LOCAL_SERVER_IP = "http://10.0.0.33"
-TARGET_ANIME_SITE = "https://example-anime-site.com" # يمكنك تغيير هذا الرابط برمجياً
+        /* الشريط الأسود العلوي */
+        .top-bar {
+            background-color: #000000;
+            color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-KV = '''
-MDScreenManager:
-    id: screen_manager
-    
-    # 1. شاشة إنشاء الحساب / تسجيل الدخول
-    MDScreen:
-        name: "auth_screen"
-        md_bg_color: 1, 1, 1, 1 # خلفية بيضاء
+        /* الأيقونات البيضاء */
+        .top-bar i {
+            color: #ffffff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* القائمة الجانبية (على اليمين) */
+        .sidebar {
+            height: 100%;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            right: -250px; /* مخفية افتراضياً */
+            background-color: #f4f4f4;
+            transition: 0.3s;
+            z-index: 1000;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+            padding-top: 60px;
+        }
+
+        .sidebar.open {
+            right: 0;
+        }
+
+        .sidebar a {
+            padding: 15px 25px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #333;
+            display: block;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .sidebar a i {
+            margin-left: 10px;
+        }
+
+        /* شاشة تسجيل الدخول */
+        #auth-screen {
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group input {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #000;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* شبكة عرض الأنمي */
+        #main-screen {
+            display: none; /* مخفية حتى تسجيل الدخول */
+            padding: 10px;
+        }
+
+        .anime-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .anime-card {
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .anime-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .anime-info {
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        .episode-badge {
+            position: absolute;
+            bottom: 50px;
+            right: 5px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .rating {
+            color: #ff9800;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar" id="topBar">
+        <i class="fa-solid fa-bars" onclick="toggleSidebar()"></i> <span class="title">آخر التحديثات</span>
+        <i class="fa-solid fa-magnify"></i> </div>
+
+    <div class="sidebar" id="sidebar">
+        <a href="#"><i class="fa-solid fa-fire"></i> آخر التحديثات</a>
+        <a href="#"><i class="fa-solid fa-list"></i> لائحة الانمي</a>
+        <a href="#"><i class="fa-solid fa-calendar"></i> المواسم</a>
+        <a href="#"><i class="fa-solid fa-gear"></i> الإعدادات</a>
+    </div>
+
+    <div id="auth-screen">
+        <h2>إنشاء حساب / تسجيل الدخول</h2>
+        <div class="input-group">
+            <input type="email" id="email" placeholder="البريد الإلكتروني">
+        </div>
+        <button onclick="sendVerification()">إرسال رمز التحقق</button>
         
-        MDBoxLayout:
-            orientation: "vertical"
-            spacing: "20dp"
-            padding: "40dp"
-            pos_hint: {"center_x": .5, "center_y": .5}
-            adaptive_height: True
+        <div class="input-group" style="margin-top: 20px;">
+            <input type="text" id="code" placeholder="رمز التحقق">
+        </div>
+        <button onclick="verifyAndLogin()">تأكيد ودخول</button>
+    </div>
+
+    <div id="main-screen">
+        <div class="anime-grid" id="animeGrid">
+            </div>
+    </div>
+
+    <script>
+        // إعداد عنوان السيرفر المحلي
+        const SERVER_URL = "http://10.0.0.33:5000";
+
+        // التحكم بالقائمة الجانبية
+        function toggleSidebar() {
+            document.getElementById("sidebar").classList.toggle("open");
+        }
+
+        // إغلاق القائمة عند النقر خارجها
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const menuIcon = document.querySelector('.fa-bars');
+            if (!sidebar.contains(event.target) && event.target !== menuIcon) {
+                sidebar.classList.remove('open');
+            }
+        });
+
+        // 1. نظام التسجيل والمصادقة
+        async function sendVerification() {
+            const email = document.getElementById("email").value;
+            if(!email) return alert("يرجى إدخال البريد الإلكتروني");
             
-            MDLabel:
-                text: "إنشاء حساب جديد"
-                halign: "center"
-                theme_text_color: "Primary"
-                font_style: "H5"
+            try {
+                await fetch(`${SERVER_URL}/api/auth/send_code`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email: email})
+                });
+                alert("تم إرسال الرمز (نظرياً)");
+            } catch (err) {
+                console.error("خطأ في الاتصال بالسيرفر", err);
+            }
+        }
+
+        async function verifyAndLogin() {
+            const code = document.getElementById("code").value;
+            if(!code) return alert("يرجى إدخال الرمز");
+
+            // بعد نجاح التحقق:
+            document.getElementById("auth-screen").style.display = "none";
+            document.getElementById("main-screen").style.display = "block";
+            loadAnimeData();
+        }
+
+        // 2. جلب البيانات من الكاشط (Backend)
+        async function loadAnimeData() {
+            const grid = document.getElementById("animeGrid");
+            grid.innerHTML = "<p style='text-align:center; grid-column: 1 / -1;'>جاري التحميل...</p>";
+
+            try {
+                const response = await fetch(`${SERVER_URL}/api/anime/latest`);
+                const result = await response.json();
                 
-            MDTextField:
-                id: email_input
-                hint_text: "البريد الإلكتروني"
-                icon_right: "email"
-                
-            MDRaisedButton:
-                text: "إرسال رمز التحقق"
-                pos_hint: {"center_x": .5}
-                on_release: app.send_verification_code(email_input.text)
-                
-            MDTextField:
-                id: verify_code_input
-                hint_text: "رمز التحقق"
-                icon_right: "lock"
-                
-            MDRaisedButton:
-                text: "تأكيد ودخول"
-                pos_hint: {"center_x": .5}
-                on_release: app.verify_and_login(verify_code_input.text)
+                if(result.status === "success") {
+                    grid.innerHTML = "";
+                    result.data.forEach(anime => {
+                        // دمج كود تشغيل المشغل الخارجي عند النقر على الأنمي
+                        const videoUrl = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"; // رابط تجريبي
+                        const intentUrl = `intent://${videoUrl.replace(/^https?:\/\//, '')}#Intent;action=android.intent.action.VIEW;type=video/mp4;end`;
 
-    # 2. الشاشة الرئيسية للتطبيق
-    MDScreen:
-        name: "main_screen"
-        md_bg_color: 1, 1, 1, 1 # واجهة التطبيق باللون الأبيض
-        
-        MDNavigationLayout:
-            
-            ScreenManager:
-                Screen:
-                    MDBoxLayout:
-                        orientation: "vertical"
-                        
-                        # الشريط العلوي الأسود مع أيقونات بيضاء
-                        MDTopAppBar:
-                            title: "Anime App"
-                            md_bg_color: 0, 0, 0, 1 # لون أسود
-                            specific_text_color: 1, 1, 1, 1 # أيقونات ونص باللون الأبيض
-                            # أيقونة البحث على اليسار
-                            left_action_items: [["magnify", lambda x: app.open_search()]]
-                            # أيقونة القائمة (الثلاث شخطات) على اليمين لفتح القائمة الجانبية
-                            right_action_items: [["menu", lambda x: nav_drawer.set_state("open")]]
-                            
-                        # منطقة عرض الأنمي (نظام شبكي مشابه لـ Anime Slayer)
-                        ScrollView:
-                            MDGridLayout:
-                                id: anime_grid
-                                cols: 2
-                                padding: "10dp"
-                                spacing: "10dp"
-                                adaptive_height: True
-                                
-            # القائمة الجانبية (تم وضعها على اليمين بناءً على طلبك)
-            MDNavigationDrawer:
-                id: nav_drawer
-                anchor: "right" # عرض القائمة من اليمين
-                radius: (0, 16, 16, 0)
-                
-                MDBoxLayout:
-                    orientation: "vertical"
-                    padding: "8dp"
-                    spacing: "8dp"
-                    
-                    MDLabel:
-                        text: "قائمة الأقسام"
-                        font_style: "H6"
-                        size_hint_y: None
-                        height: self.texture_size[1]
-                        
-                    ScrollView:
-                        MDList:
-                            OneLineIconListItem:
-                                text: "آخر التحديثات"
-                                IconLeftWidget:
-                                    icon: "update"
-                            OneLineIconListItem:
-                                text: "لائحة الأنمي"
-                                IconLeftWidget:
-                                    icon: "format-list-bulleted"
-                            OneLineIconListItem:
-                                text: "الإعدادات"
-                                IconLeftWidget:
-                                    icon: "cog"
-'''
-
-class MyAnimeApp(MDApp):
-    def build(self):
-        self.theme_cls.theme_style = "Light" # فرض الثيم الأبيض
-        return Builder.load_string(KV)
-
-    # --- 1. نظام المصادقة اليدوي ---
-    def send_verification_code(self, email):
-        print(f"تم إرسال الرمز إلى: {email}")
-        # هنا يمكنك ربط الكود بـ SMTP أو سيرفرك المحلي لإرسال الإيميل
-        
-    def verify_and_login(self, code):
-        print("تم التحقق بنجاح، جاري الدخول...")
-        self.root.current = "main_screen"
-        self.load_anime_data()
-
-    # --- 2. الكاشط الداخلي (Scraper) والاتصال بالسيرفر المحلي ---
-    def load_anime_data(self):
-        """
-        تقوم هذه الدالة بجمع البيانات من موقع الأنمي عن طريق الكاشط الداخلي،
-        أو جلبها من خلال السيرفر المحلي ذو الـ IP المحدد (10.0.0.33)
-        """
-        try:
-            # مثال للاتصال بالسيرفر المحلي الخاص بك
-            response = requests.get(f"{LOCAL_SERVER_IP}/api/latest_anime", timeout=5)
-            if response.status_code == 200:
-                print("تم جلب البيانات من السيرفر المحلي بنجاح.")
-        except:
-            print(f"تعذر الاتصال بـ {LOCAL_SERVER_IP}، جاري تشغيل الكاشط الداخلي...")
-            self.internal_scraper(TARGET_ANIME_SITE)
-            
-    def internal_scraper(self, url):
-        """ كاشط مدمج لجلب روابط الحلقات والأعمال مباشرة """
-        # يمكنك هنا إدراج كود Beautifulsoup المعتاد الخاص بك (مثل anime-data.py)
-        # page = requests.get(url)
-        # soup = BeautifulSoup(page.content, 'html.parser')
-        print(f"جاري سحب البيانات من: {url}")
-        
-    def open_search(self):
-        print("فتح شريط البحث...")
-
-    # --- 3. تشغيل المشغل الخارجي للحلقات ---
-    def play_episode_external(self, video_url):
-        """ توجيه رابط الحلقة إلى مشغل خارجي (مثل MX Player أو VLC) """
-        if platform == 'android':
-            from jnius import autoclass
-            Intent = autoclass('android.content.Intent')
-            Uri = autoclass('android.net.Uri')
-            
-            intent = Intent(Intent.ACTION_VIEW)
-            intent.setDataAndType(Uri.parse(video_url), "video/mp4")
-            
-            # بدء النشاط
-            PythonActivity = autoclass('org.kivy.android.PythonActivity')
-            currentActivity = PythonActivity.mActivity
-            currentActivity.startActivity(intent)
-        else:
-            print(f"سيتم تشغيل الرابط التالي في المشغل الخارجي: {video_url}")
-
-if __name__ == "__main__":
-    MyAnimeApp().run()
+                        const card = `
+                            <div class="anime-card" onclick="window.location.href='${intentUrl}'">
+                                <img src="${anime.image}" alt="cover">
+                                <div class="episode-badge">${anime.episode}</div>
+                                <div class="anime-info">
+                                    <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${anime.title}</div>
+                                    <div class="rating"><i class="fa-solid fa-star"></i> ${anime.rating}</div>
+                                </div>
+                            </div>
+                        `;
+                        grid.innerHTML += card;
+                    });
+                }
+            } catch (err) {
+                grid.innerHTML = "<p style='text-align:center; grid-column: 1 / -1;'>تعذر الاتصال بالسيرفر المحلي (10.0.0.33)</p>";
+            }
+        }
+    </script>
+</body>
+</html>
