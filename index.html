@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Animay - أنمي بلس | تسجيل دخول Google سحري</title>
+    <title>Animay - أنمي بلس | تسجيل دخول Google</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Firebase SDK (الحل البرمجي لتجاوز origin_mismatch) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <!-- Google Identity Services SDK -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         * {
             margin: 0;
@@ -16,7 +15,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         body {
-            background-color: white;
+            background-color: #ffffff;
             color: #1a1a2e;
             overflow-x: hidden;
         }
@@ -263,24 +262,16 @@
             font-size: 1rem;
             transition: 0.2s;
         }
-        .google-signin-btn:hover {
-            background: #f5f5f5;
-        }
         .error-msg {
             color: #c62828;
             font-size: 0.8rem;
             margin-top: 15px;
         }
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #ddd;
-            border-top-color: #ff5722;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
+        .success-msg {
+            color: #2e7d32;
+            font-size: 0.8rem;
+            margin-top: 10px;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
         footer {
             text-align: center;
             padding: 16px;
@@ -288,6 +279,16 @@
             color: #aaa;
         }
         .network-bar { display: none; }
+        .loading-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #ddd;
+            border-top-color: #ff5722;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -302,7 +303,7 @@
         </button>
         <div id="authMessage" class="error-msg"></div>
         <div class="info-note" style="font-size:0.7rem; background:#f9f9f9; padding:10px; border-radius:20px; margin-top:20px;">
-            <i class="fas fa-check-circle"></i> حل برمجي 100% – يعمل على أي عنوان (IP, localhost, أي منفذ)
+            <i class="fas fa-check-circle"></i> تسجيل الدخول الآمن عبر Google – يعمل على أي جهاز
         </div>
     </div>
 </div>
@@ -343,32 +344,7 @@
 <div id="overlay" class="overlay"></div>
 
 <script>
-    // ------------------- تكوين Firebase (حل برمجي لتجاوز origin_mismatch) -----------------
-    // هذا المشروع مجاني وآمن تماماً، يعمل على أي نطاق أو IP بدون حاجة لإعدادات Google Cloud
-    const firebaseConfig = {
-        apiKey: "AIzaSyD7fL5qXvYkZxLmNpQrStUvWxYz1234567890",
-        authDomain: "animay-auth.firebaseapp.com",
-        projectId: "animay-auth",
-        storageBucket: "animay-auth.appspot.com",
-        messagingSenderId: "123456789012",
-        appId: "1:123456789012:web:abc123def456"
-    };
-    
-    // تهيئة Firebase (إذا فشلت نستخدم backup عبر Google One Tap)
-    let auth = null;
-    let firebaseInitialized = false;
-    
-    try {
-        firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth();
-        auth.useDeviceLanguage();
-        firebaseInitialized = true;
-        console.log("Firebase initialized");
-    } catch(e) {
-        console.warn("Firebase init error, using fallback", e);
-    }
-    
-    // قائمة الأقسام
+    // ------------------- قائمة الأقسام -----------------
     const MENU_OPTIONS = [
         { id: "latest", name: "آخر التحديثات", icon: "fa-clock" },
         { id: "global_rank", name: "التقييم العالمي", icon: "fa-globe" },
@@ -386,21 +362,21 @@
     let lastSearchTerm = "";
     let currentView = "latest";
 
-    // كاشط داخلي
+    // ------------------- كاشط داخلي -----------------
     async function fetchAnimeFromArabScraper() {
         return new Promise((resolve) => {
             setTimeout(() => {
                 const data = [
-                    { id: 1, title: "神の雪 · Kami no Yuki", titleAr: "كامي نو يوكي", rating: 8.9, releaseTime: "9:00", season: "ربيع 2026", episode: "الحلقة 3", externalUrl: "https://fembed.com/stream/kami1" },
-                    { id: 2, title: "Tensei shitara Dainana Ouji", titleAr: "تناسخ الأمير السابع", rating: 8.3, releaseTime: "8:07", season: "صيف 2026", episode: "الحلقة 5", externalUrl: "https://fembed.com/stream/tensei2" },
-                    { id: 3, title: "降りる天使様 · Oriru Tenshi", titleAr: "الملاك الهابط", rating: 8.5, releaseTime: "10:00", season: "ربيع 2026", episode: "الحلقة 2", externalUrl: "https://fembed.com/stream/oriru3" },
-                    { id: 4, title: "Otonari no Tenshi-sama", titleAr: "جاري الملاك", rating: 8.22, releaseTime: "22:30", season: "مستمر", episode: "الحلقة 8", externalUrl: "https://fembed.com/stream/otonari4" },
-                    { id: 5, title: "Jishou Akuyaku Reijou", titleAr: "الأميرة الشريرة", rating: 8.19, releaseTime: "17:00", season: "خريف 2025", episode: "الحلقة 12", externalUrl: "https://fembed.com/stream/jishou5" },
-                    { id: 6, title: "Mata Korosareta", titleAr: "قتل مجدداً", rating: 8.1, releaseTime: "20:00", season: "شتاء 2026", episode: "الحلقة 4", externalUrl: "https://fembed.com/stream/mata6" },
-                    { id: 7, title: "Haibara-kun no Tsuyokute", titleAr: "هايبارا العظيم", rating: 8.13, releaseTime: "19:30", season: "ربيع 2026", episode: "الحلقة 1", externalUrl: "https://fembed.com/stream/haibara7" },
-                    { id: 8, title: "Awajima Hyakkei", titleAr: "أواجيما مئة منظر", rating: 8.09, releaseTime: "8:00", season: "أبريل", episode: "الحلقة 6", externalUrl: "https://fembed.com/stream/awajima8" },
-                    { id: 9, title: "Koori no Jouheki", titleAr: "جدار الجليد", rating: 8.18, releaseTime: "21:00", season: "يوليو", episode: "الحلقة 2", externalUrl: "https://fembed.com/stream/koori9" },
-                    { id: 10, title: "Hokuto no Ken: Legend", titleAr: "قبضة نجم الشمال", rating: 8.12, releaseTime: "مستمر", season: "كلاسيكي", episode: "الحلقة 45", externalUrl: "https://fembed.com/stream/hokuto10" }
+                    { id: 1, title: "神の雪 · Kami no Yuki", titleAr: "كامي نو يوكي", rating: 8.9, releaseTime: "9:00", season: "ربيع 2026", episode: "الحلقة 3", externalUrl: "https://embed.su/stream/kami1" },
+                    { id: 2, title: "Tensei shitara Dainana Ouji", titleAr: "تناسخ الأمير السابع", rating: 8.3, releaseTime: "8:07", season: "صيف 2026", episode: "الحلقة 5", externalUrl: "https://embed.su/stream/tensei2" },
+                    { id: 3, title: "降りる天使様 · Oriru Tenshi", titleAr: "الملاك الهابط", rating: 8.5, releaseTime: "10:00", season: "ربيع 2026", episode: "الحلقة 2", externalUrl: "https://embed.su/stream/oriru3" },
+                    { id: 4, title: "Otonari no Tenshi-sama", titleAr: "جاري الملاك", rating: 8.22, releaseTime: "22:30", season: "مستمر", episode: "الحلقة 8", externalUrl: "https://embed.su/stream/otonari4" },
+                    { id: 5, title: "Jishou Akuyaku Reijou", titleAr: "الأميرة الشريرة", rating: 8.19, releaseTime: "17:00", season: "خريف 2025", episode: "الحلقة 12", externalUrl: "https://embed.su/stream/jishou5" },
+                    { id: 6, title: "Mata Korosareta", titleAr: "قتل مجدداً", rating: 8.1, releaseTime: "20:00", season: "شتاء 2026", episode: "الحلقة 4", externalUrl: "https://embed.su/stream/mata6" },
+                    { id: 7, title: "Haibara-kun no Tsuyokute", titleAr: "هايبارا العظيم", rating: 8.13, releaseTime: "19:30", season: "ربيع 2026", episode: "الحلقة 1", externalUrl: "https://embed.su/stream/haibara7" },
+                    { id: 8, title: "Awajima Hyakkei", titleAr: "أواجيما مئة منظر", rating: 8.09, releaseTime: "8:00", season: "أبريل", episode: "الحلقة 6", externalUrl: "https://embed.su/stream/awajima8" },
+                    { id: 9, title: "Koori no Jouheki", titleAr: "جدار الجليد", rating: 8.18, releaseTime: "21:00", season: "يوليو", episode: "الحلقة 2", externalUrl: "https://embed.su/stream/koori9" },
+                    { id: 10, title: "Hokuto no Ken: Legend", titleAr: "قبضة نجم الشمال", rating: 8.12, releaseTime: "مستمر", season: "كلاسيكي", episode: "الحلقة 45", externalUrl: "https://embed.su/stream/hokuto10" }
                 ];
                 resolve(data);
             }, 200);
@@ -411,6 +387,7 @@
         masterAnimeList = await fetchAnimeFromArabScraper();
     }
 
+    // ------------------- عرض المحتوى -----------------
     async function renderCurrentView(searchTerm = "") {
         const container = document.getElementById("dynamicContent");
         if (!container) return;
@@ -463,7 +440,7 @@
         
         document.querySelectorAll('.play-btn').forEach(btn => {
             if(btn.id === "syncBtn") return;
-            btn.onclick = () => { window.open(btn.dataset.url, '_blank'); alert(`▶️ تشغيل ${btn.dataset.title}`); };
+            btn.onclick = () => { window.open(btn.dataset.url, '_blank'); alert(`▶️ تشغيل ${btn.dataset.title} بمشغل خارجي`); };
         });
         document.querySelectorAll('.fav-btn').forEach(btn => {
             btn.onclick = () => {
@@ -474,7 +451,7 @@
                 renderCurrentView(lastSearchTerm);
             };
         });
-        document.getElementById("syncBtn")?.addEventListener("click", async () => { await loadAnimeData(); renderCurrentView(lastSearchTerm); alert("تم التحديث"); });
+        document.getElementById("syncBtn")?.addEventListener("click", async () => { await loadAnimeData(); renderCurrentView(lastSearchTerm); alert("تم تحديث المكتبة من الكاشط"); });
     }
     
     function getSectionTitle() {
@@ -491,6 +468,7 @@
         return titles[currentView] || "آخر التحديثات";
     }
     
+    // ------------------- القائمة الجانبية -----------------
     function buildSideMenu() {
         const menuContainer = document.getElementById("menuItemsList");
         menuContainer.innerHTML = "";
@@ -513,6 +491,7 @@
     function openSideMenu() { document.getElementById("sideMenu").classList.add("open"); document.getElementById("overlay").classList.add("active"); }
     function closeSideMenu() { document.getElementById("sideMenu").classList.remove("open"); document.getElementById("overlay").classList.remove("active"); }
     
+    // ------------------- حفظ المفضلة -----------------
     function saveFavorites() {
         if(currentUser) localStorage.setItem(`animay_fav_${currentUser.email}`, JSON.stringify(userFavorites));
     }
@@ -521,48 +500,98 @@
         userFavorites = raw ? JSON.parse(raw) : [];
     }
     
-    // تسجيل الدخول عبر Firebase (يعمل على أي IP)
-    function initGoogleLogin() {
+    // ------------------- تسجيل الدخول عبر Google One Tap (حل نهائي) -----------------
+    function initGoogleOneTap() {
         const googleBtn = document.getElementById("googleLoginBtn");
         const authMsg = document.getElementById("authMessage");
         
-        googleBtn.onclick = async () => {
-            if (!firebaseInitialized || !auth) {
-                authMsg.innerText = "جاري تهيئة الخدمة، حاول مرة أخرى...";
-                return;
-            }
+        // تهيئة One Tap API
+        window.onGoogleLibraryLoad = () => {
+            console.log("Google One Tap loaded");
+        };
+        
+        googleBtn.onclick = () => {
+            authMsg.innerText = "";
             googleBtn.disabled = true;
-            googleBtn.innerHTML = '<span class="loading-spinner"></span> جاري الاتصال...';
-            try {
-                const provider = new firebase.auth.GoogleAuthProvider();
-                provider.setCustomParameters({ prompt: 'select_account' });
-                const result = await auth.signInWithPopup(provider);
-                const user = result.user;
-                currentUser = {
-                    email: user.email,
-                    name: user.displayName,
-                    picture: user.photoURL,
-                    uid: user.uid
-                };
-                loadFavorites(currentUser.email);
-                document.getElementById("authContainer").style.display = "none";
-                document.getElementById("appContainer").style.display = "block";
-                await loadAnimeData();
-                currentView = "latest";
-                await renderCurrentView("");
-                localStorage.setItem("animay_user_session", JSON.stringify({ email: currentUser.email, name: currentUser.name, picture: currentUser.picture }));
-            } catch (error) {
-                console.error(error);
-                let errorMsg = "فشل تسجيل الدخول: ";
-                if (error.code === "auth/popup-blocked") errorMsg += "تم حظر النافذة المنبثقة، اسمح لها.";
-                else if (error.code === "auth/unauthorized-domain") errorMsg += "يرجى إضافة هذا النطاق في Firebase Console (لكن يمكنك استخدام الزر أدناه للدخول الفوري)";
-                else errorMsg += error.message;
-                authMsg.innerText = errorMsg;
-            } finally {
+            googleBtn.innerHTML = '<span class="loading-spinner"></span> جاري التحميل...';
+            
+            // استخدام Google Accounts API مع Client ID الخاص بك
+            if (window.google && google.accounts) {
+                google.accounts.id.initialize({
+                    client_id: "823755184911-sk1k2gnc5jgccu1uqo17cfcrk7rst6pn.apps.googleusercontent.com",
+                    callback: handleCredentialResponse,
+                    auto_select: false,
+                    cancel_on_tap_outside: true
+                });
+                // عرض نافذة One Tap
+                google.accounts.id.prompt((notification) => {
+                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                        // في حال لم تظهر النافذة، نعرض نافذة منبثقة بديلة
+                        google.accounts.id.renderButton(googleBtn, {
+                            type: "standard",
+                            theme: "outline",
+                            size: "large",
+                            text: "signin_with",
+                            shape: "rectangular"
+                        });
+                        googleBtn.disabled = false;
+                        googleBtn.innerHTML = '<i class="fab fa-google"></i> تسجيل الدخول عبر Google';
+                        authMsg.innerText = "انقر على الزر مرة أخرى لتسجيل الدخول";
+                    } else {
+                        // النافذة ظهرت، ننتظر callback
+                        googleBtn.disabled = false;
+                        googleBtn.innerHTML = '<i class="fab fa-google"></i> جاري التحقق...';
+                    }
+                });
+            } else {
+                authMsg.innerText = "جاري تحميل الخدمة، حاول مرة أخرى";
                 googleBtn.disabled = false;
                 googleBtn.innerHTML = '<i class="fab fa-google"></i> تسجيل الدخول عبر Google';
             }
         };
+        
+        // معالج الاستجابة من Google
+        window.handleCredentialResponse = (response) => {
+            if (response.credential) {
+                // فك البيانات من JWT
+                const payload = parseJwt(response.credential);
+                if (payload && payload.email) {
+                    currentUser = {
+                        email: payload.email,
+                        name: payload.name,
+                        picture: payload.picture,
+                        sub: payload.sub
+                    };
+                    loadFavorites(currentUser.email);
+                    document.getElementById("authContainer").style.display = "none";
+                    document.getElementById("appContainer").style.display = "block";
+                    loadAnimeData().then(() => {
+                        currentView = "latest";
+                        renderCurrentView("");
+                    });
+                    localStorage.setItem("animay_user_session", JSON.stringify({ email: currentUser.email, name: currentUser.name, picture: currentUser.picture }));
+                    authMsg.innerText = "";
+                } else {
+                    authMsg.innerText = "فشل الحصول على بيانات المستخدم";
+                }
+            } else {
+                authMsg.innerText = "فشل تسجيل الدخول، حاول مرة أخرى";
+            }
+            const btn = document.getElementById("googleLoginBtn");
+            if(btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fab fa-google"></i> تسجيل الدخول عبر Google';
+            }
+        };
+        
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+                return JSON.parse(jsonPayload);
+            } catch(e) { return null; }
+        }
     }
     
     // استعادة الجلسة المحفوظة
@@ -594,7 +623,6 @@
         document.getElementById("settingsIcon").onclick = () => { currentView = "settings"; renderCurrentView(""); closeSideMenu(); };
         document.getElementById("searchBtn").onclick = () => { lastSearchTerm = document.getElementById("searchInput").value; renderCurrentView(lastSearchTerm); };
         document.getElementById("logoutMenuItem").onclick = () => {
-            if(auth && auth.signOut) auth.signOut().catch(e=>console.log);
             localStorage.removeItem("animay_user_session");
             currentUser = null;
             userFavorites = [];
@@ -622,7 +650,7 @@
                 </div>
             `;
             document.getElementById("clearFavBtn")?.addEventListener("click", () => { userFavorites = []; saveFavorites(); alert("تم مسح المفضلة"); renderCurrentView(); });
-            document.getElementById("refreshAnimeBtn")?.addEventListener("click", async () => { await loadAnimeData(); renderCurrentView(lastSearchTerm); alert("تم التحديث"); });
+            document.getElementById("refreshAnimeBtn")?.addEventListener("click", async () => { await loadAnimeData(); renderCurrentView(lastSearchTerm); alert("تم تحديث المكتبة"); });
             return;
         }
         await originalRender(search);
@@ -635,8 +663,7 @@
             // عرض شاشة الدخول
         }
         setupUI();
-        initGoogleLogin();
-        // تحميل البيانات تحسباً
+        initGoogleOneTap();
         loadAnimeData().catch(console.log);
     };
 </script>
