@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Animay - أنمي بلس | دخول Google</title>
+    <title>Animay - أنمي بلس | دخول Google وجلسة تجريبية</title>
     <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Identity Services SDK -->
@@ -244,7 +244,7 @@
             display: block;
         }
 
-        /* شاشة تسجيل الدخول عبر Google */
+        /* شاشة تسجيل الدخول عبر Google + بديل تجريبي */
         .auth-screen {
             display: flex;
             flex-direction: column;
@@ -257,7 +257,7 @@
         .auth-card {
             background: white;
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             border-radius: 32px;
             box-shadow: 0 12px 30px rgba(0,0,0,0.1);
             padding: 40px 28px;
@@ -274,17 +274,41 @@
         }
         .auth-card p {
             color: #555;
-            margin-bottom: 32px;
+            margin-bottom: 20px;
         }
         .google-btn-wrapper {
             display: flex;
             justify-content: center;
-            margin: 20px 0;
+            margin: 15px 0 10px;
+        }
+        .demo-btn {
+            background: #ff5722;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         .error-msg {
             color: #c62828;
             font-size: 0.8rem;
             margin-top: 12px;
+        }
+        .info-note {
+            font-size: 0.7rem;
+            background: #f9f9f9;
+            padding: 8px;
+            border-radius: 16px;
+            margin-top: 20px;
+            color: #555;
         }
         .user-avatar {
             width: 70px;
@@ -293,24 +317,6 @@
             object-fit: cover;
             margin-bottom: 15px;
             border: 2px solid #eee;
-        }
-        .network-status {
-            background: #f1f1f1;
-            padding: 6px 12px;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            direction: ltr;
-        }
-        footer {
-            text-align: center;
-            padding: 20px;
-            font-size: 0.7rem;
-            color: #aaa;
-            border-top: 1px solid #efefef;
-            margin-top: 20px;
         }
         .network-bar {
             background: #000000dd;
@@ -322,15 +328,25 @@
             align-items: center;
             direction: ltr;
         }
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.7rem;
+            color: #aaa;
+            border-top: 1px solid #efefef;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
 
-<!-- شاشة تسجيل الدخول عبر Google -->
+<!-- شاشة تسجيل الدخول (Google + تجريبي) -->
 <div id="authContainer" class="auth-screen">
     <div class="auth-card">
         <h2><i class="fas fa-tv"></i> Animay</h2>
-        <p>سجل الدخول باستخدام حساب Google للمتابعة</p>
+        <p>سجل الدخول لمشاهدة أحدث الأنمي</p>
+        
+        <!-- Google Sign-In (Client ID يجب استبداله بواحد صالح من Google Cloud Console) -->
         <div id="g_id_onload"
              data-client_id="375592908028-1to9gfj6d6e3f6g1v2kq8s0p2j3r5k7c.apps.googleusercontent.com"
              data-context="signin"
@@ -348,8 +364,21 @@
                  data-logo_alignment="left">
             </div>
         </div>
+        
+        <div style="margin: 15px 0; position: relative; text-align: center;">
+            <span style="background: white; padding: 0 12px; color: #aaa;">أو</span>
+            <hr style="border: none; border-top: 1px solid #eee; margin: -10px 0 10px;">
+        </div>
+        
+        <button id="demoLoginBtn" class="demo-btn">
+            <i class="fas fa-rocket"></i> دخول تجريبي (استخدام التطبيق فوراً)
+        </button>
+        
         <div id="authMessage" class="error-msg"></div>
-        <div class="note" style="margin-top:20px; font-size:0.7rem;">🔐 تسجيل الدخول المباشر بحساب Google | تجربة آمنة</div>
+        <div class="info-note">
+            <i class="fas fa-info-circle"></i> ملاحظة: إذا لم يعمل تسجيل الدخول عبر Google، استخدم الزر التجريبي للوصول الفوري. <br>
+            <strong>لإصلاح 401:</strong> يجب إضافة هذا النطاق إلى Authorized JavaScript origins في Google Cloud Console.
+        </div>
     </div>
 </div>
 
@@ -415,7 +444,7 @@
     ];
 
     let masterAnimeList = [];
-    let currentUser = null;       // سيحتوي على بيانات المستخدم من Google (email, name, picture)
+    let currentUser = null;       // { email, name, picture, isDemo? }
     let userFavorites = [];
     let lastSearchTerm = "";
     let currentView = "latest";
@@ -445,6 +474,10 @@
         const data = await fetchAnimeFromArabScraper();
         masterAnimeList = data;
         return masterAnimeList;
+    }
+    
+    async function loadAndDisplayAnime() {
+        await refreshAnimeLibrary();
     }
 
     // عرض المحتوى حسب view
@@ -554,10 +587,6 @@
         return titles[currentView] || "آخر المستجدات";
     }
     
-    async function loadAndDisplayAnime() {
-        await refreshAnimeLibrary();
-    }
-    
     // بناء القائمة الجانبية (يمين)
     function buildSideMenu() {
         const menuContainer = document.getElementById("menuItemsList");
@@ -581,10 +610,10 @@
     function openSideMenu() { document.getElementById("sideMenu").classList.add("open"); document.getElementById("overlay").classList.add("active"); }
     function closeSideMenu() { document.getElementById("sideMenu").classList.remove("open"); document.getElementById("overlay").classList.remove("active"); }
     
-    // حفظ بيانات المستخدم (المفضلة) مرتبطة بالبريد الإلكتروني
+    // حفظ بيانات المستخدم (المفضلة)
     function saveUserData() {
         if(currentUser && currentUser.email) {
-            const data = { email: currentUser.email, favorites: userFavorites, name: currentUser.name, picture: currentUser.picture };
+            const data = { email: currentUser.email, favorites: userFavorites, name: currentUser.name, picture: currentUser.picture, isDemo: currentUser.isDemo || false };
             localStorage.setItem(`animay_user_${currentUser.email}`, JSON.stringify(data));
         }
     }
@@ -618,7 +647,6 @@
     
     // معالج تسجيل الدخول الناجح من Google
     window.handleGoogleCredential = (response) => {
-        // فك التشفير الأساسي للـ JWT (نستخدم مكتبة بسيطة أو نكتفي بالتحقق)
         try {
             const payload = parseJwt(response.credential);
             if (payload && payload.email) {
@@ -626,7 +654,8 @@
                     email: payload.email,
                     name: payload.name,
                     picture: payload.picture,
-                    sub: payload.sub
+                    sub: payload.sub,
+                    isDemo: false
                 };
                 loadUserData(currentUser.email);
                 // إخفاء شاشة المصادقة
@@ -643,7 +672,7 @@
             }
         } catch(e) {
             console.error(e);
-            document.getElementById("authMessage").innerText = "حدث خطأ في تسجيل الدخول.";
+            document.getElementById("authMessage").innerText = "حدث خطأ في تسجيل الدخول. استخدم الزر التجريبي.";
         }
     };
     
@@ -655,6 +684,25 @@
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         }).join(''));
         return JSON.parse(jsonPayload);
+    }
+    
+    // دخول تجريبي مباشر
+    function demoLogin() {
+        currentUser = {
+            email: "demo@animay.com",
+            name: "مستخدم تجريبي",
+            picture: "https://ui-avatars.com/api/?background=ff5722&color=fff&name=Demo",
+            isDemo: true
+        };
+        loadUserData(currentUser.email);
+        document.getElementById("authContainer").style.display = "none";
+        document.getElementById("appContainer").style.display = "block";
+        loadAndDisplayAnime().then(() => {
+            currentView = "latest";
+            renderCurrentView("");
+            updateNetworkStatus();
+        });
+        localStorage.setItem("animay_logged_user", JSON.stringify(currentUser));
     }
     
     // استعادة جلسة سابقة
@@ -672,8 +720,10 @@
                     renderCurrentView("");
                     updateNetworkStatus();
                 });
+                return true;
             } catch(e) {}
         }
+        return false;
     }
     
     // إعداد واجهة المستخدم
@@ -703,17 +753,13 @@
             localStorage.removeItem("animay_logged_user");
             currentUser = null;
             userFavorites = [];
-            // إعادة تعيين عرض المصادقة
             document.getElementById("appContainer").style.display = "none";
             document.getElementById("authContainer").style.display = "flex";
-            // مسح أي رسالة خطأ
             document.getElementById("authMessage").innerText = "";
             closeSideMenu();
-            // يمكن إعادة تحميل صفحة Google One Tap
-            if(window.google?.accounts?.id) {
-                // محاولة إعادة تهيئة الزر
-            }
         });
+        
+        document.getElementById("demoLoginBtn").addEventListener("click", demoLogin);
         buildSideMenu();
     }
     
@@ -741,23 +787,4 @@
                 document.getElementById("settingsConnType").innerText = "متصل";
             }
             document.getElementById("clearFavBtn")?.addEventListener("click", () => { userFavorites = []; saveUserData(); alert("تم مسح قائمة المفضلة"); renderCurrentView(); });
-            document.getElementById("resetScrapeBtn")?.addEventListener("click", async () => { await loadAndDisplayAnime(); renderCurrentView(lastSearchTerm); alert("تم تحديث المكتبة من الكاشط العربي"); });
-            return;
-        }
-        await originalRender(search);
-    };
-    renderCurrentView = window.renderCurrentView;
-    
-    // بدء التشغيل
-    window.onload = () => {
-        restoreSession();
-        setupUI();
-        window.loadAndDisplayAnime = loadAndDisplayAnime;
-        if ('connection' in navigator) {
-            navigator.connection.addEventListener('change', updateNetworkStatus);
-        }
-        // في حال لم يتم استعادة الجلسة، نظهر شاشة المصادقة
-    };
-</script>
-</body>
-</html>
+            document.getElementById("resetScrapeBtn")?.addEventListener("click", async () => { await loadAndDisplayAnime(); renderCurrentView(lastSearchTerm); alert("تم تحديث المكتب
