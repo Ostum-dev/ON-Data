@@ -3,4 +3,4 @@ server:
   port: 5000
 
 scraper:
-  target_site: "https://example-anime-site.com"
+  target_site: "https://anime3rb.com"
