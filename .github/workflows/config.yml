@@ -1,6 +1,0 @@
-server:
-  host: "10.0.0.33"
-  port: 5000
-
-scraper:
-  target_site: "https://anime3rb.com"
