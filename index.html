@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Animay - أنمي بلس | تسجيل دخول Google</title>
+    <title>Animay - منصة الأنمي | تسجيل الدخول بالبريد الإلكتروني</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Google Identity Services SDK -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         * {
             margin: 0;
@@ -230,47 +228,93 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 20px;
         }
         .auth-card {
             background: white;
             width: 100%;
-            max-width: 380px;
+            max-width: 400px;
             border-radius: 32px;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
             padding: 40px 28px;
             text-align: center;
-            border: 1px solid #eee;
         }
         .auth-card h2 {
             margin-bottom: 12px;
+            font-size: 2rem;
+            color: #ff5722;
         }
-        .google-signin-btn {
-            background: white;
+        .auth-card p {
+            color: #666;
+            margin-bottom: 25px;
+        }
+        .email-input {
+            width: 100%;
+            padding: 14px 18px;
             border: 1px solid #ddd;
+            border-radius: 60px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            text-align: center;
+            direction: ltr;
+        }
+        .login-btn {
+            background: #ff5722;
+            color: white;
+            border: none;
             padding: 14px;
             border-radius: 60px;
             width: 100%;
             font-weight: bold;
+            font-size: 1rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            margin: 20px 0;
-            font-size: 1rem;
+            gap: 10px;
             transition: 0.2s;
+        }
+        .login-btn:hover {
+            background: #e64a19;
+        }
+        .code-input-group {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .code-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid #ddd;
+            border-radius: 60px;
+            font-size: 1rem;
+            text-align: center;
+            letter-spacing: 5px;
+            font-weight: bold;
+            direction: ltr;
+        }
+        .verify-btn {
+            background: #4caf50;
+            margin-top: 10px;
         }
         .error-msg {
             color: #c62828;
             font-size: 0.8rem;
-            margin-top: 15px;
+            margin-top: 12px;
         }
         .success-msg {
             color: #2e7d32;
             font-size: 0.8rem;
             margin-top: 10px;
+        }
+        .info-note {
+            font-size: 0.7rem;
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 20px;
+            margin-top: 20px;
+            color: #555;
         }
         footer {
             text-align: center;
@@ -283,8 +327,8 @@
             display: inline-block;
             width: 18px;
             height: 18px;
-            border: 2px solid #ddd;
-            border-top-color: #ff5722;
+            border: 2px solid white;
+            border-top-color: transparent;
             border-radius: 50%;
             animation: spin 0.6s linear infinite;
         }
@@ -293,17 +337,29 @@
 </head>
 <body>
 
-<!-- شاشة تسجيل الدخول -->
+<!-- شاشة تسجيل الدخول بالبريد الإلكتروني + رمز -->
 <div id="authContainer" class="auth-screen">
     <div class="auth-card">
         <h2><i class="fas fa-tv"></i> Animay</h2>
-        <p>سجل الدخول بحساب Google للمتابعة</p>
-        <button id="googleLoginBtn" class="google-signin-btn">
-            <i class="fab fa-google"></i> تسجيل الدخول عبر Google
+        <p>سجل الدخول باستخدام بريدك الإلكتروني</p>
+        
+        <input type="email" id="loginEmail" class="email-input" placeholder="بريدك الإلكتروني" autocomplete="email">
+        <button id="sendCodeBtn" class="login-btn">
+            <i class="fas fa-envelope"></i> إرسال رمز التحقق
         </button>
+        
+        <div class="code-input-group" id="codeSection" style="display: none;">
+            <input type="text" id="verificationCode" class="code-input" placeholder="رمز التحقق (6 أرقام)" maxlength="6" inputmode="numeric">
+            <button id="verifyCodeBtn" class="login-btn verify-btn">
+                <i class="fas fa-check"></i> تأكيد وتسجيل الدخول
+            </button>
+        </div>
+        
         <div id="authMessage" class="error-msg"></div>
-        <div class="info-note" style="font-size:0.7rem; background:#f9f9f9; padding:10px; border-radius:20px; margin-top:20px;">
-            <i class="fas fa-check-circle"></i> تسجيل الدخول الآمن عبر Google – يعمل على أي جهاز
+        <div id="authSuccess" class="success-msg"></div>
+        <div class="info-note">
+            <i class="fas fa-shield-alt"></i> سيتم إرسال رمز تحقق إلى بريدك الإلكتروني (محاكاة).<br>
+            الرقم سيظهر في تنبيه تجريبي.
         </div>
     </div>
 </div>
@@ -361,6 +417,8 @@
     let userFavorites = [];
     let lastSearchTerm = "";
     let currentView = "latest";
+    let pendingCode = null;
+    let pendingEmail = null;
 
     // ------------------- كاشط داخلي -----------------
     async function fetchAnimeFromArabScraper() {
@@ -500,98 +558,69 @@
         userFavorites = raw ? JSON.parse(raw) : [];
     }
     
-    // ------------------- تسجيل الدخول عبر Google One Tap (حل نهائي) -----------------
-    function initGoogleOneTap() {
-        const googleBtn = document.getElementById("googleLoginBtn");
+    // ------------------- تسجيل الدخول بالبريد الإلكتروني + رمز -----------------
+    function initEmailLogin() {
+        const sendBtn = document.getElementById("sendCodeBtn");
+        const verifyBtn = document.getElementById("verifyCodeBtn");
+        const emailInput = document.getElementById("loginEmail");
+        const codeInput = document.getElementById("verificationCode");
+        const codeSection = document.getElementById("codeSection");
         const authMsg = document.getElementById("authMessage");
+        const authSuccess = document.getElementById("authSuccess");
         
-        // تهيئة One Tap API
-        window.onGoogleLibraryLoad = () => {
-            console.log("Google One Tap loaded");
-        };
-        
-        googleBtn.onclick = () => {
-            authMsg.innerText = "";
-            googleBtn.disabled = true;
-            googleBtn.innerHTML = '<span class="loading-spinner"></span> جاري التحميل...';
+        sendBtn.onclick = () => {
+            const email = emailInput.value.trim();
+            if (!email || !email.includes("@")) {
+                authMsg.innerText = "يرجى إدخال بريد إلكتروني صالح";
+                return;
+            }
             
-            // استخدام Google Accounts API مع Client ID الخاص بك
-            if (window.google && google.accounts) {
-                google.accounts.id.initialize({
-                    client_id: "823755184911-sk1k2gnc5jgccu1uqo17cfcrk7rst6pn.apps.googleusercontent.com",
-                    callback: handleCredentialResponse,
-                    auto_select: false,
-                    cancel_on_tap_outside: true
-                });
-                // عرض نافذة One Tap
-                google.accounts.id.prompt((notification) => {
-                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                        // في حال لم تظهر النافذة، نعرض نافذة منبثقة بديلة
-                        google.accounts.id.renderButton(googleBtn, {
-                            type: "standard",
-                            theme: "outline",
-                            size: "large",
-                            text: "signin_with",
-                            shape: "rectangular"
-                        });
-                        googleBtn.disabled = false;
-                        googleBtn.innerHTML = '<i class="fab fa-google"></i> تسجيل الدخول عبر Google';
-                        authMsg.innerText = "انقر على الزر مرة أخرى لتسجيل الدخول";
-                    } else {
-                        // النافذة ظهرت، ننتظر callback
-                        googleBtn.disabled = false;
-                        googleBtn.innerHTML = '<i class="fab fa-google"></i> جاري التحقق...';
-                    }
-                });
-            } else {
-                authMsg.innerText = "جاري تحميل الخدمة، حاول مرة أخرى";
-                googleBtn.disabled = false;
-                googleBtn.innerHTML = '<i class="fab fa-google"></i> تسجيل الدخول عبر Google';
-            }
+            // إنشاء رمز عشوائي
+            const code = Math.floor(100000 + Math.random() * 900000).toString();
+            pendingCode = code;
+            pendingEmail = email;
+            
+            // محاكاة إرسال رمز (في التطبيق الحقيقي سيتم إرسال بريد إلكتروني)
+            alert(`📧 تم إرسال رمز التحقق إلى ${email}\nالرمز التجريبي: ${code}`);
+            
+            authMsg.innerText = "";
+            authSuccess.innerText = `✓ تم إرسال الرمز إلى ${email}. أدخله أدناه.`;
+            codeSection.style.display = "block";
+            codeInput.focus();
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<i class="fas fa-check"></i> تم الإرسال';
         };
         
-        // معالج الاستجابة من Google
-        window.handleCredentialResponse = (response) => {
-            if (response.credential) {
-                // فك البيانات من JWT
-                const payload = parseJwt(response.credential);
-                if (payload && payload.email) {
-                    currentUser = {
-                        email: payload.email,
-                        name: payload.name,
-                        picture: payload.picture,
-                        sub: payload.sub
-                    };
-                    loadFavorites(currentUser.email);
-                    document.getElementById("authContainer").style.display = "none";
-                    document.getElementById("appContainer").style.display = "block";
-                    loadAnimeData().then(() => {
-                        currentView = "latest";
-                        renderCurrentView("");
-                    });
-                    localStorage.setItem("animay_user_session", JSON.stringify({ email: currentUser.email, name: currentUser.name, picture: currentUser.picture }));
-                    authMsg.innerText = "";
-                } else {
-                    authMsg.innerText = "فشل الحصول على بيانات المستخدم";
-                }
-            } else {
-                authMsg.innerText = "فشل تسجيل الدخول، حاول مرة أخرى";
+        verifyBtn.onclick = () => {
+            const enteredCode = codeInput.value.trim();
+            if (!enteredCode) {
+                authMsg.innerText = "أدخل رمز التحقق";
+                return;
             }
-            const btn = document.getElementById("googleLoginBtn");
-            if(btn) {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fab fa-google"></i> تسجيل الدخول عبر Google';
+            if (enteredCode !== pendingCode) {
+                authMsg.innerText = "الرمز غير صحيح. حاول مرة أخرى";
+                return;
             }
+            
+            // تسجيل الدخول ناجح
+            currentUser = {
+                email: pendingEmail,
+                name: pendingEmail.split("@")[0],
+                picture: `https://ui-avatars.com/api/?background=ff5722&color=fff&name=${pendingEmail[0]}`
+            };
+            loadFavorites(currentUser.email);
+            
+            document.getElementById("authContainer").style.display = "none";
+            document.getElementById("appContainer").style.display = "block";
+            loadAnimeData().then(() => {
+                currentView = "latest";
+                renderCurrentView("");
+            });
+            localStorage.setItem("animay_user_session", JSON.stringify({ email: currentUser.email, name: currentUser.name }));
+            
+            authMsg.innerText = "";
+            authSuccess.innerText = "✓ تم تسجيل الدخول بنجاح!";
         };
-        
-        function parseJwt(token) {
-            try {
-                const base64Url = token.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
-                return JSON.parse(jsonPayload);
-            } catch(e) { return null; }
-        }
     }
     
     // استعادة الجلسة المحفوظة
@@ -628,6 +657,15 @@
             userFavorites = [];
             document.getElementById("appContainer").style.display = "none";
             document.getElementById("authContainer").style.display = "flex";
+            // إعادة تعيين حقول الدخول
+            document.getElementById("loginEmail").value = "";
+            document.getElementById("verificationCode").value = "";
+            document.getElementById("codeSection").style.display = "none";
+            document.getElementById("sendCodeBtn").disabled = false;
+            document.getElementById("sendCodeBtn").innerHTML = '<i class="fas fa-envelope"></i> إرسال رمز التحقق';
+            document.getElementById("authMessage").innerText = "";
+            document.getElementById("authSuccess").innerText = "";
+            pendingCode = null;
             closeSideMenu();
         };
         buildSideMenu();
@@ -642,7 +680,7 @@
                 <div class="section-title">⚙️ الإعدادات</div>
                 <div style="background:#f9f9f9; border-radius:28px; padding:24px;">
                     <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
-                        <img src="${currentUser?.picture || ''}" style="width:55px; height:55px; border-radius:50%;">
+                        <img src="${currentUser?.picture || 'https://ui-avatars.com/api/?background=ff5722&color=fff&name=User'}" style="width:55px; height:55px; border-radius:50%;">
                         <div><strong>${currentUser?.name || ''}</strong><br><small>${currentUser?.email || ''}</small></div>
                     </div>
                     <button id="clearFavBtn" class="play-btn" style="background:#333;">🗑️ مسح قائمتي</button>
@@ -663,7 +701,7 @@
             // عرض شاشة الدخول
         }
         setupUI();
-        initGoogleOneTap();
+        initEmailLogin();
         loadAnimeData().catch(console.log);
     };
 </script>
