@@ -6,23 +6,102 @@
     <title>Anime App</title>
     
     <style>
-        body { background-color: #ffffff; font-family: sans-serif; margin: 0; }
+        /* إعدادات عامة */
+        :root {
+            --bg-color: #ffffff; /* خلفية بيضاء للتطبيق */
+            --header-bg: #000000; /* شريط علوي أسود */
+            --text-dark: #222222;
+            --text-light: #ffffff;
+            --border-color: #eeeeee;
+        }
+
+        body { 
+            background-color: var(--bg-color); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            overflow-x: hidden;
+        }
+
+        /* الشريط العلوي الأسود */
         .navbar { 
-            background-color: #000000; color: white; 
-            display: flex; justify-content: space-between; padding: 15px; 
+            background-color: var(--header-bg); 
+            color: var(--text-light); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            padding: 0 15px; 
+            height: 60px;
+            position: fixed;
+            top: 0; width: 100%; box-sizing: border-box;
+            z-index: 1000;
         }
-        .icon-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+
+        .icon-btn { 
+            background: none; border: none; color: white; 
+            font-size: 24px; cursor: pointer; padding: 10px;
+        }
+
+        .navbar h1 { font-size: 20px; margin: 0; font-weight: bold; }
+
+        /* خلفية مظللة عند فتح القائمة */
+        .overlay {
+            position: fixed; top: 60px; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            opacity: 0; visibility: hidden;
+            transition: 0.3s;
+        }
+        .overlay.active { opacity: 1; visibility: visible; }
+
+        /* القائمة الجانبية (تصميم أنمي سلاير) */
         .sidebar { 
-            position: fixed; right: -250px; top: 60px; width: 250px; height: 100%; 
-            background: #f4f4f4; transition: 0.3s; padding-top: 20px;
+            position: fixed; right: -280px; top: 60px; 
+            width: 280px; height: calc(100% - 60px); 
+            background: var(--bg-color); 
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            transition: right 0.3s ease-in-out; 
+            z-index: 999;
+            overflow-y: auto;
         }
+
         .sidebar.active { right: 0; }
-        .anime-grid { 
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
-            gap: 15px; padding: 20px; 
+
+        .sidebar-menu { 
+            list-style: none; /* إزالة النقاط */
+            padding: 0; margin: 0; 
         }
-        .card { border: 1px solid #ddd; padding: 10px; text-align: center; }
-        .card img { width: 100%; height: 200px; object-fit: cover; }
+
+        .sidebar-menu li a {
+            display: flex; align-items: center;
+            padding: 15px 20px;
+            color: var(--text-dark);
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.2s;
+        }
+
+        .sidebar-menu li a:hover { background-color: #f9f9f9; }
+        
+        .sidebar-menu li a .icon { 
+            margin-left: 15px; /* مسافة بين الأيقونة والنص */
+            font-size: 20px; width: 25px; text-align: center; color: #555;
+        }
+
+        /* فاصل سميك بين الأقسام */
+        .menu-divider { height: 8px; background-color: #f4f4f4; border-bottom: 1px solid var(--border-color); }
+
+        /* منطقة المحتوى */
+        main { margin-top: 80px; padding: 15px; }
+        
+        .anime-grid { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+            gap: 15px; 
+        }
+        .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card img { width: 100%; height: 180px; object-fit: cover; }
+        .card h3 { font-size: 14px; padding: 10px; margin: 0; text-align: center; color: #333; }
     </style>
 </head>
 <body>
@@ -33,12 +112,19 @@
         <button id="search-btn" class="icon-btn">🔍</button>
     </header>
 
+    <div id="overlay" class="overlay"></div>
+
     <nav id="sidebar" class="sidebar">
-        <ul>
-            <li>أحدث التحديثات</li>
-            <li>لائحة الأنمي</li>
-            <li>المواسم</li>
-            <li>الإعدادات</li>
+        <ul class="sidebar-menu">
+            <li><a href="#"><span class="icon">🔥</span> اخر التحديثات</a></li>
+            <li><a href="#"><span class="icon">📋</span> لائحة الانمي</a></li>
+            <li><a href="#"><span class="icon">📅</span> المواسم</a></li>
+            <li class="menu-divider"></li>
+            <li><a href="#"><span class="icon">📊</span> التقييم العالمي</a></li>
+            <li><a href="#"><span class="icon">📈</span> التقييم العربي</a></li>
+            <li class="menu-divider"></li>
+            <li><a href="#"><span class="icon">❤️</span> أنمياتي المفضلة</a></li>
+            <li><a href="#"><span class="icon">⚙️</span> الاعدادات</a></li>
         </ul>
     </nav>
 
@@ -46,10 +132,21 @@
         </main>
 
     <script>
-        document.getElementById('menu-btn').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.toggle('active');
-        });
+        const menuBtn = document.getElementById('menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
 
+        // دالة فتح وإغلاق القائمة
+        function toggleMenu() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        // ربط الأزرار بالدالة
+        menuBtn.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu); // إغلاق عند الضغط خارج القائمة
+
+        // جلب البيانات (كما كتبناها سابقاً)
         async function loadAnime() {
             try {
                 const response = await fetch('data.json');
@@ -60,19 +157,14 @@
                     const card = document.createElement('div');
                     card.className = 'card';
                     card.innerHTML = `
-                        <img src="${anime.img}" alt="${anime.title}">
+                        <img src="${anime.img || 'https://via.placeholder.com/150'}" alt="${anime.title}">
                         <h3>${anime.title}</h3>
-                        <button onclick="watchExternally('${anime.link}')">مشاهدة بمشغل خارجي</button>
                     `;
                     container.appendChild(card);
                 });
             } catch (error) {
-                console.error("لم يتم العثور على ملف data.json بعد", error);
+                console.log("في انتظار بيانات data.json");
             }
-        }
-
-        function watchExternally(url) {
-            window.location.href = `intent:${url}#Intent;scheme=http;package=com.mxtech.videoplayer.ad;end`;
         }
 
         loadAnime();
