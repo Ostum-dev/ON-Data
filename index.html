@@ -4,7 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anime App</title>
-    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        body { background-color: #ffffff; font-family: sans-serif; margin: 0; }
+        .navbar { 
+            background-color: #000000; color: white; 
+            display: flex; justify-content: space-between; padding: 15px; 
+        }
+        .icon-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .sidebar { 
+            position: fixed; right: -250px; top: 60px; width: 250px; height: 100%; 
+            background: #f4f4f4; transition: 0.3s; padding-top: 20px;
+        }
+        .sidebar.active { right: 0; }
+        .anime-grid { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+            gap: 15px; padding: 20px; 
+        }
+        .card { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        .card img { width: 100%; height: 200px; object-fit: cover; }
+    </style>
 </head>
 <body>
 
@@ -26,6 +45,37 @@
     <main id="anime-container" class="anime-grid">
         </main>
 
-    <script src="script.js"></script>
+    <script>
+        document.getElementById('menu-btn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+
+        async function loadAnime() {
+            try {
+                const response = await fetch('data.json');
+                const animes = await response.json();
+                const container = document.getElementById('anime-container');
+
+                animes.forEach(anime => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <img src="${anime.img}" alt="${anime.title}">
+                        <h3>${anime.title}</h3>
+                        <button onclick="watchExternally('${anime.link}')">مشاهدة بمشغل خارجي</button>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                console.error("لم يتم العثور على ملف data.json بعد", error);
+            }
+        }
+
+        function watchExternally(url) {
+            window.location.href = `intent:${url}#Intent;scheme=http;package=com.mxtech.videoplayer.ad;end`;
+        }
+
+        loadAnime();
+    </script>
 </body>
 </html>
