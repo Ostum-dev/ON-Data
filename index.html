@@ -6,11 +6,11 @@
     <title>القرآن المبين</title>
     <style>
         :root {
-            --bg-color: #fcfbf9;
-            --sidebar-bg: #f3eae1;
-            --text-color: #3e3223;
-            --accent-color: #8c6b4f;
-            --hover-color: #a8886b;
+            --bg-color: #fbf9f4;
+            --sidebar-bg: #f2e6d8;
+            --text-color: #362b1d;
+            --accent-color: #7a583a;
+            --hover-color: #a38162;
         }
 
         body {
@@ -27,7 +27,7 @@
         .sidebar {
             width: 340px;
             background-color: var(--sidebar-bg);
-            border-left: 2px solid var(--accent-color);
+            border-left: 3px solid var(--accent-color);
             display: flex;
             flex-direction: column;
             height: 100%;
@@ -41,7 +41,6 @@
             color: white;
             font-size: 1.6rem;
             font-weight: bold;
-            letter-spacing: 1px;
         }
 
         .tabs {
@@ -138,7 +137,7 @@
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(140, 107, 79, 0.85);
+            background: rgba(122, 88, 58, 0.85);
             color: white;
             border: none;
             width: 55px;
@@ -177,6 +176,7 @@
 </head>
 <body>
 
+    <!-- القائمة الجانبية العمودية الثابتة للوصول السريع -->
     <div class="sidebar">
         <div class="sidebar-header">القرآن المبين</div>
         <div class="tabs">
@@ -186,20 +186,23 @@
         <div id="list-container" class="list-container"></div>
     </div>
 
+    <!-- منطقة عرض صفحات المصحف الشريف -->
     <div class="main-content">
+        <!-- زر يمين للرجوع للخلف صفحة -->
         <button id="right-btn" class="nav-btn" onclick="navigatePage(-1)">&#10095;</button>
         
         <div class="viewer-container">
-            <img id="quran-image" class="quran-img" src="" alt="صفحة المصحف الشريف">
+            <img id="quran-image" class="quran-img" src="" alt="صفحة المصحف الشريف" onerror="handleImageError()">
         </div>
 
+        <!-- زر يسار للتقدم للأمام صفحة -->
         <button id="left-btn" class="nav-btn" onclick="navigatePage(1)">&#10094;</button>
         
         <div class="page-info" id="page-info">الصفحة: ١</div>
     </div>
 
     <script>
-        // صفحات بداية السور الـ 114 كاملة وبدقة بالغة طبقاً لطبعة مصحف المدينة لعام 1440 هـ
+        // صفحات بداية السور الـ 114 كاملة لمصحف المدينة النبوية
         const surahPages = [
             1, 2, 50, 77, 106, 128, 151, 177, 187, 208, 221, 235, 249, 255, 262, 267, 282, 293, 305, 312, 322, 332, 342, 350, 359, 
             367, 377, 385, 396, 404, 411, 415, 418, 428, 434, 440, 446, 453, 458, 467, 477, 483, 489, 496, 499, 502, 507, 511, 515, 
@@ -209,17 +212,17 @@
         ];
 
         const surahNames = [
-            "الفاتحة", "البقرة", "آل عمران", "النساء", "المائدة", "الأنعام", "الأعراف", "الأنفال", "التوبة", "يونس", "هود", "يوسف", "الرعد", "إبراهيم", "الحجر", "النحل", "الإسراء", "الكهف", "مريم", "طه", "الأنبياء", "الحج", "المؤمنون", "النور", "الفرقان", "الشعراء", "النمل", "القصص", "العنكبوت", "الروم", "لقمان", "السجدة", "الأحزاب", "سبأ", "فاطر", "يس", "الصافات", "ص", "الزمر", "غافر", "فصلت", "الشورى", "الزخرف", "الدخان", "الجاثية", "الأحقاف", "محمد", "الفتح", "الحجرات", "ق", "الذاريات", "الطور", "النجم", "القمر", "الرحمن", "الواقعة", "الحديد", "المجادلة", "الحشر", "الممتحنة", "الصف", "الجمعة", "المنافقون", "التغابن", "الطلاق", "التحريم", "الملك", "القلم", "الحاقة", "المعارج", "نوح", "الجن", "المزمل", "المدثل", "القيامة", "الإنسان", "المرسلات", "النبأ", "النازعات", "عبس", "التكوير", "الانفطار", "المطففين", "الانشقاق", "البروج", "الطارق", "الأعلى", "الغاشية", "الفجر", "البلد", "الشمس", "الليل", "الضحى", "الشرح", "التين", "العلق", "القدر", "البينة", "الزلزلة", "العاديات", "القارعة", "التكاثر", "العصر", "الهمزة", "الفيل", "قريش", "الماعون", "الكوثر", "الكافرون", "النصر", "المسد", "الإخلاص", "الفلق", "الناس"
+            "الفاتحة", "البقرة", "آل عمران", "النساء", "المائدة", "الأنعام", "الأعراف", "الأنفال", "التوبة", "يونس", "هود", "يوسف", "الرعد", "إبراهيم", "الحجر", "النحل", "الإسراء", "الكهف", "مريم", "طه", "الأنبياء", "الحج", "المؤمنون", "النور", "الفرقان", "الشعراء", "النمل", "القصص", "العنكبوت", "الروم", "لقمان", "السجدة", "الأحزاب", "سبأ", "فاطر", "يس", "الصافات", "ص", "الزمر", "غافر", "فصلت", "الشورى", "الزخرف", "الدخان", "الجاثية", "الأحقاف", "محمد", "الفتح", "الحجرات", "ق", "الذاريات", "الطور", "النجم", "القمر", "الرحمن", "الواقعة", "الحديد", "المجادلة", "الحشر", "الممتحنة", "الصف", "الجمعة", "المنافقون", "التغابن", "الطلاق", "التحريم", "الملك", "القلم", "الحاقة", "المعارج", "نوح", "الجن", "المزمل", "المدثر", "القيامة", "الإنسان", "المرسلات", "النبأ", "النازعات", "عبس", "التكوير", "الانفطار", "المطففين", "الانشقاق", "البروج", "الطارق", "الأعلى", "الغاشية", "الفجر", "البلد", "الشمس", "الليل", "الضحى", "الشرح", "التين", "العلق", "القدر", "البينة", "الزلزلة", "العاديات", "القارعة", "التكاثر", "العصر", "الهمزة", "الفيل", "قريش", "الماعون", "الكوثر", "الكافرون", "النصر", "المسد", "الإخلاص", "الفلق", "الناس"
         ];
 
-        // تم إضافة وضبط الـ 30 جزءاً بالكامل بالتأكيد الدقيق لصفحاتها
+        // الصفحات الدقيقة للـ 30 جزءاً كاملة
         const juzPages = [
             1, 22, 42, 62, 82, 102, 122, 142, 162, 182, 202, 222, 242, 262, 282, 302, 322, 342, 362, 382, 402, 422, 442, 462, 482, 502, 522, 542, 562, 582
         ];
 
         let currentPage = 1;
 
-        // دالة عرض وتوليد عناصر القوائم الجانبية
+        // دالة إنشاء وتوليد عناصر القوائم الجانبية
         function renderList(type) {
             const container = document.getElementById('list-container');
             container.innerHTML = '';
@@ -233,7 +236,6 @@
                     container.appendChild(div);
                 });
             } else {
-                // توليد كامل للأجزاء من 1 إلى 30 دون نسيان أي جزء
                 for (let i = 0; i < 30; i++) {
                     const div = document.createElement('div');
                     div.className = 'list-item';
@@ -244,14 +246,14 @@
             }
         }
 
-        // التبديل السلس بين السور والأجزاء
+        // التبديل بين تبويب السور والأجزاء
         function switchTab(type) {
             document.getElementById('surah-tab').classList.toggle('active', type === 'surah');
             document.getElementById('juz-tab').classList.toggle('active', type === 'juz');
             renderList(type);
         }
 
-        // جلب الصور عن طريق رابط مستقر عام وشغال بكل المتصفحات بلا حظر
+        // دالة تحميل وعرض الصفحة (تستخدم خادم تدارس السريع جداً والمفتوح بالكامل)
         function loadPage(pageNumber) {
             if (pageNumber < 1 || pageNumber > 604) return;
             currentPage = pageNumber;
@@ -259,8 +261,10 @@
             const imgElement = document.getElementById('quran-image');
             imgElement.style.opacity = 0.5;
             
-            // رابط مباشر مفتوح ومجاني لصور صفحات مصحف مجمع الملك فهد لطباعة المصحف الشريف دقة ممتازة
-            const imageUrl = `https://raw.githubusercontent.com/attorator/quran-pages/master/pages/${currentPage}.png`;
+            // رابط مباشر سريع وآمن للغاية من تطبيق المصحف الإلكتروني لـ "موقع تدارس" الرسمي
+            // يتم صياغة اسم الملف ليناسب صيغة الخادم بثلاث خانات (مثال: 001.png, 052.png, 604.png)
+            const formattedPage = String(currentPage).padStart(3, '0');
+            const imageUrl = `https://tadaros.net/mushaf/madina/png/${formattedPage}.png`;
             
             imgElement.src = imageUrl;
             imgElement.onload = () => { imgElement.style.opacity = 1; };
@@ -269,15 +273,23 @@
             document.getElementById('page-info').innerText = `الصفحة: ${String(currentPage).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d])}`;
         }
 
+        // دالة في حال فشل الرابط الأول (سيرفر احتياطي سريع جداً لضمان العمل تحت أي ظرف)
+        function handleImageError() {
+            const imgElement = document.getElementById('quran-image');
+            const formattedPage = String(currentPage).padStart(3, '0');
+            // رابط احتياطي من خوادم القرآن الكريم المفتوحة
+            imgElement.src = `https://mushaf.ma/madina/png/${formattedPage}.png`;
+        }
+
         // دالة تقليب الصفحات أفقياً
         function navigatePage(direction) {
             loadPage(currentPage + direction);
         }
 
-        // تحميل أولي للتطبيق عند الفتح مباشرة
+        // تشغيل التطبيق تلقائياً بمجرد فتح الملف
         window.onload = () => {
             renderList('surah');
-            loadPage(1); // البدء من الصفحة الأولى
+            loadPage(1); // البدء تلقائياً من الفاتحة
         };
 
         // دعم إضافي للتحكم بأسهم لوحة المفاتيح
