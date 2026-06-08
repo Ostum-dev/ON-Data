@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>القرآن المبين</title>
+    <style>
+        :root {
+            --bg-color: #f4f1ea;
+            --sidebar-bg: #eadeca;
+            --text-color: #2c2519;
+            --accent-color: #8c6239;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* القائمة الجانبية العمودية */
+        .sidebar {
+            width: 300px;
+            background-color: var(--sidebar-bg);
+            border-left: 2px solid var(--accent-color);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            background-color: var(--accent-color);
+            color: white;
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(0,0,0,0.05);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--text-color);
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn.active {
+            border-bottom-color: var(--accent-color);
+            background: rgba(255,255,255,0.5);
+        }
+
+        .list-container {
+            overflow-y: auto;
+            flex: 1;
+            padding: 10px;
+        }
+
+        .list-item {
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .list-item:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        /* منطقة عرض المصحف والتقليب الأفقي */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .viewer-container {
+            width: 100%;
+            height: 90%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+        }
+
+        .page-slide {
+            min-width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            scroll-snap-align: start;
+        }
+
+        .quran-img {
+            max-height: 95%;
+            max-width: 95%;
+            object-fit: contain;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border-radius: 4px;
+            background: white;
+        }
+
+        /* أزرار التنقل السريع */
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(140, 98, 57, 0.8);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            z-index: 10;
+        }
+
+        .nav-btn:hover { background: var(--accent-color); }
+        #prev-btn { right: 20px; }
+        #next-btn { left: 20px; }
+
+        .page-info {
+            position: absolute;
+            bottom: 15px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">القرآن المبين</div>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('surah')">السور</button>
+            <button class="tab-btn" onclick="switchTab('juz')">الأجزاء</button>
+        </div>
+        <div id="list-container" class="list-container">
+            </div>
+    </div>
+
+    <div class="main-content">
+        <button id="prev-btn" class="nav-btn" onclick="navigatePage(1)">&#10095;</button>
+        
+        <div class="viewer-container" id="viewer">
+            <div class="page-slide">
+                <img id="quran-image" class="quran-img" src="https:// kingfahdcomplex.gov.sa/wp-content/uploads/2020/02/002.jpg" alt="صفحة المصحف" onerror="this.src='https://via.placeholder.com/400x600?text=الصفحة+الأولى'">
+            </div>
+        </div>
+
+        <button id="next-btn" class="nav-btn" onclick="navigatePage(-1)">&#10094;</button>
+        <div class="page-info" id="page-info">الصفحة: ١</div>
+    </div>
+
+    <script>
+        // بيانات محاكاة للسور (رقم السورة، اسمها، ورقم بداية الصفحة في طبعة المدينة)
+        const surahs = [
+            { id: 1, name: "الفاتحة", page: 1 },
+            { id: 2, name: "البقرة", page: 2 },
+            { id: 3, name: "آل عمران", page: 50 },
+            { id: 4, name: "النساء", page: 77 },
+            { id: 5, name: "المائدة", page: 106 }
+            // يمكنك إكمال بقية السور الـ 114 هنا بنفس النمط
+        ];
+
+        // بيانات الأجزاء الثلاثين وصفحة بداية كل جزء
+        const juzs = Array.from({ length: 30 }, (_, i) => ({
+            id: i + 1,
+            name: `الجزء ${i + 1}`,
+            page: Math.floor(i * 20.1) + 2 // حساب تقريبي لصفحات الأجزاء طبعة المدينة
+        }));
+
+        let currentPage = 1;
+
+        // دالة لعرض العناصر في القائمة الجانبية
+        function renderList(type) {
+            const container = document.getElementById('list-container');
+            container.innerHTML = '';
+            const data = type === 'surah' ? surahs : juzs;
+
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `<span>${item.name}</span> <small>صفحة ${item.page}</small>`;
+                div.onclick = () => loadPage(item.page);
+                container.appendChild(div);
+            });
+        }
+
+        // التبديل بين تبويب السور والأجزاء
+        function switchTab(type) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderList(type);
+        }
+
+        // تحديث الصورة بناءً على طبعة مصحف المدينة 1440هـ وموقع مجمع الملك فهد
+        function loadPage(pageNumber) {
+            if (pageNumber < 1 || pageNumber > 604) return;
+            currentPage = pageNumber;
+            
+            // تحويل رقم الصفحة إلى صيغة 3 خانات (مثل: 001, 025, 604) تناسب سيرفر المجمع
+            const formattedPage = String(currentPage).padStart(3, '0');
+            
+            // رابط افتراضي لخوادم مصحف المدينة الرسمي
+            const imageUrl = `https://images.qurancomplex.gov.sa/wp-content/uploads/1440/pages/${formattedPage}.png`;
+            
+            const imgElement = document.getElementById('quran-image');
+            imgElement.src = imageUrl;
+            
+            // تحديث رقم الصفحة أسفل الشاشة وتحويله لأرقام عربية
+            document.getElementById('page-info').innerText = `الصفحة: ${String(currentPage).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d])}`;
+        }
+
+        // التقليب الأفقي باستخدام الأزرار (يمين ويسار)
+        function navigatePage(direction) {
+            // في القراءة العربية (من اليمين لليسار): التقدم للامام يعني تقليل الرقم للحفاظ على الاتجاه
+            loadPage(currentPage + direction);
+        }
+
+        // تشغيل القائمة تلقائياً عند فتح الموقع
+        window.onload = () => {
+            renderList('surah');
+            loadPage(1); // فتح الفاتحة افتراضياً
+        };
+    </script>
+</body>
+</html>
