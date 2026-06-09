@@ -4,53 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>القرآن المبين</title>
-    <link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@700&family=Amiri:ital@1&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; padding: 15px; background-color: #f4f6f9; color: #333; margin: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; padding: 10px; background-color: #f4f6f9; color: #333; margin: 0; }
         
-        /* تصميم الخانة العلوية مع الخط الجديد */
-        .navbar { 
-            background-color: #38b1e5; 
-            text-align: center; 
-            padding: 20px 0; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-        }
-        .logo-text {
-            font-family: 'Reem Kufi', sans-serif; /* تطبيق الخط الكوفي */
-            font-size: 42px;
-            color: white;
-            margin: 0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2); 
-        }
+        /* إخفاء الهيدر القديم لأن App Inventor يحتوي على خانة علوية خاصة به */
+        .navbar { display: none; }
 
-        /* تصميم التبويبات (السور والأجزاء) */
+        /* تصميم التبويبات (فهرس السور / فهرس الأجزاء) لتبدو كتطبيق احترافي */
         .tabs { display: flex; justify-content: center; background: #fff; margin-bottom: 15px; border-bottom: 2px solid #e0e0e0; }
         .tab { flex: 1; text-align: center; padding: 15px; font-size: 18px; font-weight: bold; cursor: pointer; color: #555; transition: 0.3s; }
         .tab.active { color: #38b1e5; border-bottom: 4px solid #38b1e5; background: #f0f8ff; }
         
-        /* القوائم والأزرار */
-        .container { padding: 10px; max-width: 600px; margin: auto; }
+        /* تصميم القائمة وعرض العناصر */
+        .container { padding: 5px; max-width: 600px; margin: auto; }
         .btn-back { display: none; background: #393939; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 15px; font-size: 16px; width: 100%; font-weight: bold; }
-        .item { padding: 15px; border-bottom: 1px solid #e0e0e0; font-size: 18px; background: white; margin-bottom: 8px; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
-        .item:hover { background: #f0f8ff; transform: translateY(-2px); }
+        .item { padding: 15px; border-bottom: 1px solid #e0e0e0; font-size: 18px; background: white; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
         
-        /* مسميات السور المكية والمدنية */
+        /* مسميات السور على جهة اليسار */
         .revelation-place { font-size: 14px; font-weight: bold; padding: 4px 8px; border-radius: 4px; }
         .makkah { color: #2e7d32; background-color: #e8f5e9; } 
         .madinah { color: #ef6c00; background-color: #fff3e0; } 
 
-        /* تصميم الآيات (في المنتصف) */
-        .ayah-container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; }
-        .ayah { padding: 12px; font-size: 24px; line-height: 2.2; text-align: center; word-spacing: 4px; border-bottom: 1px dashed #eee; display: inline-block; width: 100%; }
-        .ayah-num { color: #38b1e5; font-size: 16px; font-weight: bold; margin-right: 5px; }
+        /* تصميم عرض الآيات بالرسم العثماني المصحفي */
+        .ayah-container { background: white; padding: 25px; border-radius: 12px; text-align: center; }
+        .ayah { font-family: 'Amiri', serif; padding: 12px; font-size: 26px; line-height: 2.2; text-align: center; word-spacing: 4px; border-bottom: 1px dashed #eee; display: inline-block; width: 100%; }
+        .ayah-num { color: #38b1e5; font-size: 18px; font-weight: bold; margin-right: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="navbar">
-        <h1 class="logo-text">القرآن المبين</h1>
-    </div>
-    
     <div id="navigation-tabs" class="tabs">
         <div id="tab-chapters" class="tab active" onclick="switchTab('chapters')">فهرس السور</div>
         <div id="tab-juzs" class="tab" onclick="switchTab('juzs')">فهرس الأجزاء</div>
@@ -63,16 +46,12 @@
 
     <script>
         let currentTab = 'chapters';
-
-        window.onload = () => {
-            loadChapters();
-        };
+        window.onload = () => { loadChapters(); };
 
         function switchTab(tab) {
             currentTab = tab;
             document.getElementById('back-btn').style.display = 'none';
             document.getElementById('navigation-tabs').style.display = 'flex';
-            
             if (tab === 'chapters') {
                 document.getElementById('tab-chapters').classList.add('active');
                 document.getElementById('tab-juzs').classList.remove('active');
@@ -94,7 +73,6 @@
                         let isMakkah = c.revelation_place === 'makkah';
                         let typeText = isMakkah ? 'مكية' : 'مدنية';
                         let typeClass = isMakkah ? 'makkah' : 'madinah';
-
                         html += `<div class="item" onclick="loadAyahsByChapter(${c.id}, '${c.name_arabic}')">
                                     <span>${c.id}. سورة ${c.name_arabic}</span>
                                     <span class="revelation-place ${typeClass}">${typeText}</span>
@@ -120,20 +98,20 @@
         }
 
         function loadAyahsByChapter(chapterId, chapterName) {
-            prepareView(`سورة ${chapterName}`);
+            prepareView();
             fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${chapterId}`)
                 .then(res => res.json())
                 .then(data => { displayAyahs(data.verses); });
         }
 
         function loadAyahsByJuz(juzId) {
-            prepareView(`الجزء رقم ${juzId}`);
+            prepareView();
             fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?juz_number=${juzId}`)
                 .then(res => res.json())
                 .then(data => { displayAyahs(data.verses); });
         }
 
-        function prepareView(title) {
+        function prepareView() {
             document.getElementById('navigation-tabs').style.display = 'none';
             document.getElementById('back-btn').style.display = 'block';
             document.getElementById('content-area').innerHTML = 'جاري تحميل الآيات بالرسم العثماني...';
@@ -149,9 +127,7 @@
             document.getElementById('content-area').innerHTML = html;
         }
 
-        function goBack() {
-            switchTab(currentTab);
-        }
+        function goBack() { switchTab(currentTab); }
     </script>
 </body>
 </html>
