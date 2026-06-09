@@ -6,29 +6,42 @@
     <title>القرآن المبين</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; padding: 15px; background-color: #f4f6f9; color: #333; margin: 0; }
-        .navbar { background: #0f62fe; color: white; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        
+        /* تعديل الخانة العلوية لتتناسب مع الصورة */
+        .navbar { 
+            background-color: #31a8e0; /* لون أزرق مقارب لخلفية الصورة */
+            padding: 10px; 
+            text-align: center; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
+        .logo-img {
+            max-height: 80px; /* التحكم في حجم الشعار */
+            width: auto;
+            vertical-align: middle;
+        }
+
         .tabs { display: flex; justify-content: center; background: #fff; margin-bottom: 15px; border-bottom: 2px solid #e0e0e0; }
         .tab { flex: 1; text-align: center; padding: 15px; font-size: 18px; font-weight: bold; cursor: pointer; color: #555; transition: 0.3s; }
-        .tab.active { color: #0f62fe; border-bottom: 4px solid #0f62fe; background: #f0f4ff; }
+        .tab.active { color: #31a8e0; border-bottom: 4px solid #31a8e0; background: #f0f8ff; }
         .container { padding: 10px; max-width: 600px; margin: auto; }
         .btn-back { display: none; background: #393939; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 15px; font-size: 16px; width: 100%; font-weight: bold; }
         .item { padding: 15px; border-bottom: 1px solid #e0e0e0; font-size: 18px; background: white; margin-bottom: 8px; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
-        .item:hover { background: #f0f4ff; transform: translateY(-2px); }
+        .item:hover { background: #f0f8ff; transform: translateY(-2px); }
         
-        /* مسميات السور المكية والمدنية */
         .revelation-place { font-size: 14px; font-weight: bold; padding: 4px 8px; border-radius: 4px; }
-        .makkah { color: #2e7d32; background-color: #e8f5e9; } /* أخضر للمكية */
-        .madinah { color: #ef6c00; background-color: #fff3e0; } /* برتقالي للمدنية */
+        .makkah { color: #2e7d32; background-color: #e8f5e9; } 
+        .madinah { color: #ef6c00; background-color: #fff3e0; } 
 
-        /* تصميم الآيات في المنتصف */
         .ayah-container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; }
         .ayah { padding: 12px; font-size: 24px; line-height: 2.2; text-align: center; word-spacing: 4px; border-bottom: 1px dashed #eee; display: inline-block; width: 100%; }
-        .ayah-num { color: #0f62fe; font-size: 16px; font-weight: bold; margin-right: 5px; }
+        .ayah-num { color: #31a8e0; font-size: 16px; font-weight: bold; margin-right: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="navbar">القرآن المبين</div>
+    <div class="navbar">
+        <img src="logo.jpg" alt="القرآن المبين" class="logo-img">
+    </div>
     
     <div id="navigation-tabs" class="tabs">
         <div id="tab-chapters" class="tab active" onclick="switchTab('chapters')">فهرس السور</div>
@@ -63,7 +76,6 @@
             }
         }
 
-        // جلب قائمة السور مع استبدال عدد الآيات بنوع السورة
         function loadChapters() {
             document.getElementById('content-area').innerHTML = 'جاري تحميل السور...';
             fetch('https://api.quran.com/api/v4/chapters')
@@ -71,7 +83,6 @@
                 .then(data => {
                     let html = '';
                     data.chapters.forEach(c => {
-                        // تحديد النص والكلاس المناسب بناءً على مكان النزول
                         let isMakkah = c.revelation_place === 'makkah';
                         let typeText = isMakkah ? 'مكية' : 'مدنية';
                         let typeClass = isMakkah ? 'makkah' : 'madinah';
@@ -85,7 +96,6 @@
                 });
         }
 
-        // جلب قائمة الأجزاء
         function loadJuzs() {
             document.getElementById('content-area').innerHTML = 'جاري تحميل الأجزاء...';
             fetch('https://api.quran.com/api/v4/juzs')
@@ -101,7 +111,6 @@
                 });
         }
 
-        // عرض آيات السورة
         function loadAyahsByChapter(chapterId, chapterName) {
             prepareView(`سورة ${chapterName}`);
             fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${chapterId}`)
@@ -109,7 +118,6 @@
                 .then(data => { displayAyahs(data.verses); });
         }
 
-        // عرض آيات الجزء
         function loadAyahsByJuz(juzId) {
             prepareView(`الجزء رقم ${juzId}`);
             fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?juz_number=${juzId}`)
