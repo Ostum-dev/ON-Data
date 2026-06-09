@@ -1,27 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>القرآن الكريم</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مصحف السور والآيات</title>
     <style>
-        body { font-family: sans-serif; direction: rtl; padding: 20px; }
-        .item { padding: 15px; border-bottom: 1px solid #ddd; font-size: 18px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; padding: 15px; background-color: #f9f9f9; color: #333; }
+        .header { text-align: center; padding: 10px; background: #0f62fe; color: white; border-radius: 8px; margin-bottom: 15px; font-size: 20px; font-weight: bold; }
+        .btn-back { display: none; background: #393939; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 15px; font-size: 16px; }
+        .item { padding: 15px; border-bottom: 1px solid #e0e0e0; font-size: 18px; background: white; margin-bottom: 5px; border-radius: 5px; cursor: pointer; transition: 0.2s; }
+        .item:hover { background: #f0f4ff; }
+        .ayah { padding: 12px; font-size: 22px; line-height: 1.8; text-align: justify; word-spacing: 4px; border-bottom: 1px dashed #ccc; }
+        .ayah-num { color: #0f62fe; font-size: 14px; font-weight: bold; margin-right: 5px; }
     </style>
 </head>
 <body>
-    <div id="content">جاري التحميل...</div>
+
+    <div id="main-header" class="header">فهرس سور القرآن الكريم</div>
+    <button id="back-btn" class="btn-back" onclick="loadChapters()">← العودة للفهرس</button>
+    
+    <div id="container">جاري تحميل السور...</div>
+
     <script>
-        // رابط الـ API
-        const url = 'https://api.quran.com/api/v4/chapters';
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                let html = '';
-                data.chapters.forEach(c => {
-                    html += `<div class="item">${c.name_arabic}</div>`;
-                });
-                document.getElementById('content').innerHTML = html;
-            });
+        // تحميل قائمة السور عند فتح الصفحة لأول مرة
+        window.onload = loadChapters;
+
+        function loadChapters() {
+            document.getElementById('back-btn').style.display = 'none';
+            document.getElementById('main-header').innerText = 'فهرس سور القرآن الكريم';
+            document.getElementById('container').innerHTML = 'جاري تحميل السور...';
+
+            fetch('https://api.quran.com/api/v4/chapters')
+                .then(res => res.json())
+                .then(data => {
+                    let html = '';
+                    data.chapters.forEach(c => {
+                        html += `<div class="item" onclick="loadAyahs(${c.id}, '${c.name_arabic}')">
+                                    ${c.id}. ${c.name_arabic} <span style="float: left; font-size: 14px; color: #666;">آياتها: ${c.verses_count}</span>
+                                 </div>`;
+                    });
+                    document.getElementById('container').innerHTML = html;
+                })
+                .catch(err => { document.getElementById('container').innerHTML = 'حدث خطأ في تحميل البيانات'; });
+        }
+
+        function loadAyahs(chapterId, chapterName) {
+            document.getElementById('back-btn').style.display = 'block';
+            document.getElementById('main-header').innerText = `سورة ${chapterName}`;
+            document.getElementById('container').innerHTML = 'جاري تحميل الآيات...';
+
+            // استدعاء الـ API الخاص بآيات السورة المحددة بالرسم العثماني
+            fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${chapterId}`)
+                .then(res => res.json())
+                .then(data => {
+                    let html = '<div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">';
+                    data.verses.forEach(v => {
+                        // تنظيف النص البرمجي وعرض الآية مع رقمها
+                        html += `<span class="ayah">${v.text_uthmani} <span class="ayah-num">(${v.verse_key.split(':')[1]})</span></span> `;
+                    });
+                    html += '</div>';
+                    document.getElementById('container').innerHTML = html;
+                })
+                .catch(err => { document.getElementById('container').innerHTML = 'حدث خطأ أثناء تحميل الآيات'; });
+        }
     </script>
 </body>
 </html>
