@@ -3,65 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مصحف السور والآيات</title>
+    <title>القرآن المبين</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; padding: 15px; background-color: #f9f9f9; color: #333; }
-        .header { text-align: center; padding: 10px; background: #0f62fe; color: white; border-radius: 8px; margin-bottom: 15px; font-size: 20px; font-weight: bold; }
-        .btn-back { display: none; background: #393939; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 15px; font-size: 16px; }
-        .item { padding: 15px; border-bottom: 1px solid #e0e0e0; font-size: 18px; background: white; margin-bottom: 5px; border-radius: 5px; cursor: pointer; transition: 0.2s; }
-        .item:hover { background: #f0f4ff; }
-        .ayah { padding: 12px; font-size: 22px; line-height: 1.8; text-align: justify; word-spacing: 4px; border-bottom: 1px dashed #ccc; }
-        .ayah-num { color: #0f62fe; font-size: 14px; font-weight: bold; margin-right: 5px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; padding: 15px; background-color: #f4f6f9; color: #333; margin: 0; }
+        .navbar { background: #0f62fe; color: white; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .tabs { display: flex; justify-content: center; background: #fff; margin-bottom: 15px; border-bottom: 2px solid #e0e0e0; }
+        .tab { flex: 1; text-align: center; padding: 15px; font-size: 18px; font-weight: bold; cursor: pointer; color: #555; transition: 0.3s; }
+        .tab.active { color: #0f62fe; border-bottom: 4px solid #0f62fe; background: #f0f4ff; }
+        .container { padding: 10px; max-width: 600px; margin: auto; }
+        .btn-back { display: none; background: #393939; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 15px; font-size: 16px; width: 100%; }
+        .item { padding: 15px; border-bottom: 1px solid #e0e0e0; font-size: 18px; background: white; margin-bottom: 8px; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.2s; }
+        .item:hover { background: #f0f4ff; transform: translateY(-2px); }
+        .ayah { padding: 12px; font-size: 24px; line-height: 2; text-align: justify; word-spacing: 4px; border-bottom: 1px dashed #eee; display: inline-block; width: 100%; }
+        .ayah-num { color: #0f62fe; font-size: 16px; font-weight: bold; margin-right: 5px; }
     </style>
 </head>
 <body>
 
-    <div id="main-header" class="header">فهرس سور القرآن الكريم</div>
-    <button id="back-btn" class="btn-back" onclick="loadChapters()">← العودة للفهرس</button>
+    <div class="navbar">القرآن المبين</div>
     
-    <div id="container">جاري تحميل السور...</div>
+    <div id="navigation-tabs" class="tabs">
+        <div id="tab-chapters" class="tab active" onclick="switchTab('chapters')">فهرس السور</div>
+        <div id="tab-juzs" class="tab" onclick="switchTab('juzs')">فهرس الأجزاء</div>
+    </div>
+
+    <div class="container">
+        <button id="back-btn" class="btn-back" onclick="goBack()">← العودة للفهرس</button>
+        <div id="content-area">جاري التحميل...</div>
+    </div>
 
     <script>
-        // تحميل قائمة السور عند فتح الصفحة لأول مرة
-        window.onload = loadChapters;
+        let currentTab = 'chapters'; // التبويب الافتراضي هو السور
 
-        function loadChapters() {
+        window.onload = () => {
+            loadChapters();
+        };
+
+        function switchTab(tab) {
+            currentTab = tab;
             document.getElementById('back-btn').style.display = 'none';
-            document.getElementById('main-header').innerText = 'فهرس سور القرآن الكريم';
-            document.getElementById('container').innerHTML = 'جاري تحميل السور...';
+            document.getElementById('navigation-tabs').style.display = 'flex';
+            
+            if (tab === 'chapters') {
+                document.getElementById('tab-chapters').classList.add('active');
+                document.getElementById('tab-juzs').classList.remove('active');
+                loadChapters();
+            } else {
+                document.getElementById('tab-juzs').classList.add('active');
+                document.getElementById('tab-chapters').classList.remove('active');
+                loadJuzs();
+            }
+        }
 
+        // 1. جلب قائمة السور
+        function loadChapters() {
+            document.getElementById('content-area').innerHTML = 'جاري تحميل السور...';
             fetch('https://api.quran.com/api/v4/chapters')
                 .then(res => res.json())
                 .then(data => {
                     let html = '';
                     data.chapters.forEach(c => {
-                        html += `<div class="item" onclick="loadAyahs(${c.id}, '${c.name_arabic}')">
-                                    ${c.id}. ${c.name_arabic} <span style="float: left; font-size: 14px; color: #666;">آياتها: ${c.verses_count}</span>
+                        html += `<div class="item" onclick="loadAyahsByChapter(${c.id}, '${c.name_arabic}')">
+                                    ${c.id}. سورة ${c.name_arabic} <span style="float: left; font-size: 14px; color: #666;">آياتها: ${c.verses_count}</span>
                                  </div>`;
                     });
-                    document.getElementById('container').innerHTML = html;
-                })
-                .catch(err => { document.getElementById('container').innerHTML = 'حدث خطأ في تحميل البيانات'; });
+                    document.getElementById('content-area').innerHTML = html;
+                });
         }
 
-        function loadAyahs(chapterId, chapterName) {
-            document.getElementById('back-btn').style.display = 'block';
-            document.getElementById('main-header').innerText = `سورة ${chapterName}`;
-            document.getElementById('container').innerHTML = 'جاري تحميل الآيات...';
-
-            // استدعاء الـ API الخاص بآيات السورة المحددة بالرسم العثماني
-            fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${chapterId}`)
+        // 2. جلب قائمة الأجزاء
+        function loadJuzs() {
+            document.getElementById('content-area').innerHTML = 'جاري تحميل الأجزاء...';
+            fetch('https://api.quran.com/api/v4/juzs')
                 .then(res => res.json())
                 .then(data => {
-                    let html = '<div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">';
-                    data.verses.forEach(v => {
-                        // تنظيف النص البرمجي وعرض الآية مع رقمها
-                        html += `<span class="ayah">${v.text_uthmani} <span class="ayah-num">(${v.verse_key.split(':')[1]})</span></span> `;
+                    let html = '';
+                    data.juzs.forEach(j => {
+                        html += `<div class="item" onclick="loadAyahsByJuz(${j.juz_number})">
+                                    الجزء الأول والعرون ${j.juz_number} <span style="float: left; font-size: 14px; color: #666;">عدد الآيات: ${Object.keys(j.verse_mapping).length}</span>
+                                 </div>`;
                     });
-                    html += '</div>';
-                    document.getElementById('container').innerHTML = html;
-                })
-                .catch(err => { document.getElementById('container').innerHTML = 'حدث خطأ أثناء تحميل الآيات'; });
+                    // تصحيح صياغة الكلمة لتظهر بشكل لائق تلقائياً
+                    let correctedHtml = '';
+                    data.juzs.forEach(j => {
+                        correctedHtml += `<div class="item" onclick="loadAyahsByJuz(${j.juz_number})">
+                                    الجزء رقم (${j.juz_number})
+                                 </div>`;
+                    });
+                    document.getElementById('content-area').innerHTML = correctedHtml;
+                });
+        }
+
+        // 3. عرض آيات السورة
+        function loadAyahsByChapter(chapterId, chapterName) {
+            prepareView(`سورة ${chapterName}`);
+            fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${chapterId}`)
+                .then(res => res.json())
+                .then(data => { displayAyahs(data.verses); });
+        }
+
+        // 4. عرض آيات الجزء
+        function loadAyahsByJuz(juzId) {
+            prepareView(`الجزء رقم ${juzId}`);
+            fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?juz_number=${juzId}`)
+                .then(res => res.json())
+                .then(data => { displayAyahs(data.verses); });
+        }
+
+        function prepareView(title) {
+            document.getElementById('navigation-tabs').style.display = 'none';
+            document.getElementById('back-btn').style.display = 'block';
+            document.getElementById('content-area').innerHTML = 'جاري تحميل الآيات بالرسم العثماني...';
+        }
+
+        function displayAyahs(verses) {
+            let html = '<div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">';
+            verses.forEach(v => {
+                let ayahNum = v.verse_key.split(':')[1];
+                html += `<span class="ayah">${v.text_uthmani} <span class="ayah-num">(${ayahNum})</span></span> `;
+            });
+            html += '</div>';
+            document.getElementById('content-area').innerHTML = html;
+        }
+
+        function goBack() {
+            switchTab(currentTab);
         }
     </script>
 </body>
