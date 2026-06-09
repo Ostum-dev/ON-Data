@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>القرآن الكريم</title>
+    <style>
+        body { font-family: sans-serif; direction: rtl; padding: 20px; }
+        .item { padding: 15px; border-bottom: 1px solid #ddd; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div id="content">جاري التحميل...</div>
+    <script>
+        // رابط الـ API
+        const url = 'https://api.quran.com/api/v4/chapters';
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                let html = '';
+                data.chapters.forEach(c => {
+                    html += `<div class="item">${c.name_arabic}</div>`;
+                });
+                document.getElementById('content').innerHTML = html;
+            });
+    </script>
+</body>
+</html>
