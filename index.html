@@ -7,40 +7,45 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; padding: 15px; background-color: #f4f6f9; color: #333; margin: 0; }
         
-        /* تعديل الخانة العلوية لتتناسب مع الصورة */
+        /* تصميم الخانة العلوية لتندمج مع لون الصورة الزرقاء */
         .navbar { 
-            background-color: #31a8e0; /* لون أزرق مقارب لخلفية الصورة */
-            padding: 10px; 
+            background-color: #38b1e5; /* لون مقارب جداً لخلفية المخطوطة */
             text-align: center; 
+            padding: 15px 0; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
         }
         .logo-img {
-            max-height: 80px; /* التحكم في حجم الشعار */
-            width: auto;
-            vertical-align: middle;
+            max-width: 220px; /* عرض مناسب للشعار */
+            height: auto;
+            border-radius: 8px; /* تنعيم حواف الصورة */
         }
 
+        /* تصميم التبويبات (السور والأجزاء) */
         .tabs { display: flex; justify-content: center; background: #fff; margin-bottom: 15px; border-bottom: 2px solid #e0e0e0; }
         .tab { flex: 1; text-align: center; padding: 15px; font-size: 18px; font-weight: bold; cursor: pointer; color: #555; transition: 0.3s; }
-        .tab.active { color: #31a8e0; border-bottom: 4px solid #31a8e0; background: #f0f8ff; }
+        .tab.active { color: #38b1e5; border-bottom: 4px solid #38b1e5; background: #f0f8ff; }
+        
+        /* القوائم والأزرار */
         .container { padding: 10px; max-width: 600px; margin: auto; }
         .btn-back { display: none; background: #393939; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 15px; font-size: 16px; width: 100%; font-weight: bold; }
         .item { padding: 15px; border-bottom: 1px solid #e0e0e0; font-size: 18px; background: white; margin-bottom: 8px; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
         .item:hover { background: #f0f8ff; transform: translateY(-2px); }
         
+        /* مسميات السور المكية والمدنية */
         .revelation-place { font-size: 14px; font-weight: bold; padding: 4px 8px; border-radius: 4px; }
-        .makkah { color: #2e7d32; background-color: #e8f5e9; } 
-        .madinah { color: #ef6c00; background-color: #fff3e0; } 
+        .makkah { color: #2e7d32; background-color: #e8f5e9; } /* أخضر */
+        .madinah { color: #ef6c00; background-color: #fff3e0; } /* برتقالي */
 
+        /* تصميم الآيات (في المنتصف) */
         .ayah-container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; }
         .ayah { padding: 12px; font-size: 24px; line-height: 2.2; text-align: center; word-spacing: 4px; border-bottom: 1px dashed #eee; display: inline-block; width: 100%; }
-        .ayah-num { color: #31a8e0; font-size: 16px; font-weight: bold; margin-right: 5px; }
+        .ayah-num { color: #38b1e5; font-size: 16px; font-weight: bold; margin-right: 5px; }
     </style>
 </head>
 <body>
 
     <div class="navbar">
-        <img src="logo.jpg" alt="القرآن المبين" class="logo-img">
+        <img src="logo.jpg?v=1" alt="القرآن المبين" class="logo-img">
     </div>
     
     <div id="navigation-tabs" class="tabs">
@@ -76,6 +81,7 @@
             }
         }
 
+        // استدعاء السور المكية والمدنية
         function loadChapters() {
             document.getElementById('content-area').innerHTML = 'جاري تحميل السور...';
             fetch('https://api.quran.com/api/v4/chapters')
