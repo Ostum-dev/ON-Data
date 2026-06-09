@@ -11,10 +11,13 @@
         .tab { flex: 1; text-align: center; padding: 15px; font-size: 18px; font-weight: bold; cursor: pointer; color: #555; transition: 0.3s; }
         .tab.active { color: #0f62fe; border-bottom: 4px solid #0f62fe; background: #f0f4ff; }
         .container { padding: 10px; max-width: 600px; margin: auto; }
-        .btn-back { display: none; background: #393939; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 15px; font-size: 16px; width: 100%; }
+        .btn-back { display: none; background: #393939; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 15px; font-size: 16px; width: 100%; font-weight: bold; }
         .item { padding: 15px; border-bottom: 1px solid #e0e0e0; font-size: 18px; background: white; margin-bottom: 8px; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.2s; }
         .item:hover { background: #f0f4ff; transform: translateY(-2px); }
-        .ayah { padding: 12px; font-size: 24px; line-height: 2; text-align: justify; word-spacing: 4px; border-bottom: 1px dashed #eee; display: inline-block; width: 100%; }
+        
+        /* تعديل تصميم الآيات لتصبح في المنتصف وتظهر بشكل مريح */
+        .ayah-container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; }
+        .ayah { padding: 12px; font-size: 24px; line-height: 2.2; text-align: center; word-spacing: 4px; border-bottom: 1px dashed #eee; display: inline-block; width: 100%; }
         .ayah-num { color: #0f62fe; font-size: 16px; font-weight: bold; margin-right: 5px; }
     </style>
 </head>
@@ -33,7 +36,7 @@
     </div>
 
     <script>
-        let currentTab = 'chapters'; // التبويب الافتراضي هو السور
+        let currentTab = 'chapters';
 
         window.onload = () => {
             loadChapters();
@@ -55,7 +58,7 @@
             }
         }
 
-        // 1. جلب قائمة السور
+        // جلب قائمة السور
         function loadChapters() {
             document.getElementById('content-area').innerHTML = 'جاري تحميل السور...';
             fetch('https://api.quran.com/api/v4/chapters')
@@ -71,7 +74,7 @@
                 });
         }
 
-        // 2. جلب قائمة الأجزاء
+        // جلب قائمة الأجزاء وتصحيح العرض
         function loadJuzs() {
             document.getElementById('content-area').innerHTML = 'جاري تحميل الأجزاء...';
             fetch('https://api.quran.com/api/v4/juzs')
@@ -80,21 +83,14 @@
                     let html = '';
                     data.juzs.forEach(j => {
                         html += `<div class="item" onclick="loadAyahsByJuz(${j.juz_number})">
-                                    الجزء الأول والعرون ${j.juz_number} <span style="float: left; font-size: 14px; color: #666;">عدد الآيات: ${Object.keys(j.verse_mapping).length}</span>
-                                 </div>`;
-                    });
-                    // تصحيح صياغة الكلمة لتظهر بشكل لائق تلقائياً
-                    let correctedHtml = '';
-                    data.juzs.forEach(j => {
-                        correctedHtml += `<div class="item" onclick="loadAyahsByJuz(${j.juz_number})">
                                     الجزء رقم (${j.juz_number})
                                  </div>`;
                     });
-                    document.getElementById('content-area').innerHTML = correctedHtml;
+                    document.getElementById('content-area').innerHTML = html;
                 });
         }
 
-        // 3. عرض آيات السورة
+        // عرض آيات السورة (محاذاة في المنتصف)
         function loadAyahsByChapter(chapterId, chapterName) {
             prepareView(`سورة ${chapterName}`);
             fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${chapterId}`)
@@ -102,7 +98,7 @@
                 .then(data => { displayAyahs(data.verses); });
         }
 
-        // 4. عرض آيات الجزء
+        // عرض آيات الجزء (محاذاة في المنتصف)
         function loadAyahsByJuz(juzId) {
             prepareView(`الجزء رقم ${juzId}`);
             fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?juz_number=${juzId}`)
@@ -117,7 +113,7 @@
         }
 
         function displayAyahs(verses) {
-            let html = '<div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">';
+            let html = '<div class="ayah-container">';
             verses.forEach(v => {
                 let ayahNum = v.verse_key.split(':')[1];
                 html += `<span class="ayah">${v.text_uthmani} <span class="ayah-num">(${ayahNum})</span></span> `;
