@@ -6,19 +6,8 @@
     <title>القرآن المبين</title>
     <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital@0;1&display=swap" rel="stylesheet">
     <style>
+        /* الألوان الفاتحة هي الافتراضية الآن لتصحيح منطق زر التفعيل */
         :root {
-            --bg-color: #1a1a1a;
-            --container-bg: #222222;
-            --text-color: #ffffff;
-            --text-muted: #aaaaaa;
-            --border-color: #333333;
-            --accent-color: #38b1e5;
-            --header-gold: #daa520;
-            --item-bg: #282828;
-            --active-ayah: #443e1d;
-        }
-
-        .light-mode {
             --bg-color: #f4f6f9;
             --container-bg: #ffffff;
             --text-color: #333333;
@@ -30,13 +19,25 @@
             --active-ayah: #fff59d;
         }
 
-        html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color); overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background 0.3s; user-select: none; -webkit-user-select: none; }
+        /* كلاس الوضع المظلم يتم تفعيله عند وضع علامة الصح */
+        .dark-mode {
+            --bg-color: #1a1a1a;
+            --container-bg: #222222;
+            --text-color: #ffffff;
+            --text-muted: #aaaaaa;
+            --border-color: #333333;
+            --accent-color: #38b1e5;
+            --header-gold: #daa520;
+            --item-bg: #282828;
+            --active-ayah: #443e1d;
+        }
+
+        html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color); overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background 0.3s, color 0.3s; user-select: none; -webkit-user-select: none; }
         
-        .container { display: flex; flex-direction: column; height: 100%; max-width: 600px; margin: auto; background: var(--container-bg); position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .container { display: flex; flex-direction: column; height: 100%; max-width: 600px; margin: auto; background: var(--container-bg); position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.2); transition: background 0.3s; }
         
-        /* شريط علوي متطابق مع التعديلات المطلوبة */
         .app-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
-        .app-title { font-size: 22px; font-weight: normal; color: var(--text-color); } /* خط عادي من جهة اليمين */
+        .app-title { font-size: 22px; font-weight: normal; color: var(--text-color); } 
         .header-icons { display: flex; gap: 20px; font-size: 20px; cursor: pointer; align-items: center; }
         .icon-btn { transition: 0.2s; }
         .icon-btn:hover { transform: scale(1.1); color: var(--accent-color); }
@@ -51,6 +52,7 @@
         .list-panel::-webkit-scrollbar { display: none; }
 
         .item-row { display: flex; justify-content: space-between; align-items: center; padding: 18px 15px; background: var(--item-bg); margin-bottom: 2px; cursor: pointer; transition: 0.2s; border-bottom: 1px solid var(--border-color); }
+        .item-row:hover { background: var(--border-color); }
         .item-center { display: flex; flex-direction: column; align-items: center; text-align: center; flex: 1; }
         .item-main-title { font-family: 'Amiri', serif; font-size: 20px; font-weight: bold; color: var(--text-color); }
         .item-sub-title { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
@@ -63,29 +65,24 @@
         .mushaf-surah-title { font-family: 'Amiri Quran', serif; font-size: 30px; color: var(--header-gold); margin-bottom: 20px; border: 3px double var(--header-gold); padding: 10px; border-radius: 8px; }
         .bismillah { font-family: 'Amiri Quran', serif; font-size: 26px; display: block; margin-bottom: 20px; }
         
-        /* التفاعل الكلي مع الآيات */
         .ayah-span { font-family: 'Amiri Quran', serif; font-size: 26px; line-height: 2.2; cursor: pointer; padding: 2px 6px; border-radius: 4px; display: inline; transition: background-color 0.2s; -webkit-tap-highlight-color: transparent; }
-        .ayah-span.active-reciting { background-color: var(--active-ayah) !important; border-radius: 4px; }
+        .ayah-span.active-reciting { background-color: var(--active-ayah) !important; border-radius: 4px; color: var(--text-color); }
         .ayah-num { font-family: 'Amiri Quran', serif; color: #b22222; font-size: 22px; margin: 0 3px; display: inline-block; }
 
-        /* مشغل صوتي مخصص واحترافي في المنتصف */
-        .audio-bar { position: absolute; bottom: -220px; left: 0; right: 0; background: var(--container-bg); border-top: 1px solid var(--border-color); padding: 15px 20px; transition: bottom 0.3s cubic-bezier(0.1, 0.4, 0.2, 1); z-index: 2500; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .audio-bar { position: absolute; bottom: -220px; left: 0; right: 0; background: var(--container-bg); border-top: 1px solid var(--border-color); padding: 15px 20px; transition: bottom 0.3s cubic-bezier(0.1, 0.4, 0.2, 1); z-index: 2500; display: flex; flex-direction: column; align-items: center; gap: 10px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); }
         .audio-bar.active { bottom: 0; }
         
         .audio-info-row { width: 100%; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
         #audio-title { font-weight: bold; color: var(--accent-color); }
         
-        /* أزرار التحكم في المنتصف */
         .audio-controls-mid { display: flex; align-items: center; justify-content: center; gap: 25px; margin: 5px 0; width: 100%; }
         .control-btn { font-size: 24px; cursor: pointer; background: none; border: none; color: var(--text-color); transition: 0.2s; display: flex; align-items: center; justify-content: center; }
         .control-btn:hover { color: var(--accent-color); transform: scale(1.1); }
         .play-pause-btn { font-size: 36px; color: var(--accent-color); }
         
-        /* خيارات التكرار */
         .repeat-selector { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); background: var(--item-bg); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border-color); }
         .repeat-selector select { background: transparent; color: var(--text-color); border: none; font-size: 13px; font-weight: bold; cursor: pointer; outline: none; }
 
-        /* نوافذ الإعدادات والمرجعيات */
         .settings-overlay { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 3000; justify-content: center; align-items: center; }
         .settings-modal { background: var(--container-bg); border-radius: 16px; width: 85%; max-width: 450px; padding: 20px; border: 1px solid var(--border-color); }
         .modal-title { font-size: 18px; font-weight: bold; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; }
@@ -98,10 +95,9 @@
         .btn-action { background: var(--accent-color); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
     </style>
 </head>
-<body>
+<body class="dark-mode"> <!-- التطبيق يفتح مظلماً كوضع افتراضي -->
 
     <div class="container" id="app-container">
-        <!-- الشريط العلوي الرئيسي (القرآن المبين بخط عادى يميناً، الإعدادات والمرجعيات يساراً) -->
         <div class="app-header" id="main-header">
             <div class="app-title">القرآن المبين</div>
             <div class="header-icons">
@@ -110,7 +106,6 @@
             </div>
         </div>
 
-        <!-- التبويبات العلوية -->
         <div class="tabs" id="main-tabs">
             <div class="tab active" id="tab-0" onclick="setPanelIndex(0)">سورة</div>
             <div class="tab" id="tab-1" onclick="setPanelIndex(1)">الجزء</div>
@@ -118,7 +113,6 @@
 
         <div class="back-btn" id="back-button" onclick="exitMushafView()">→ العودة للفهرس</div>
 
-        <!-- واجهة التمرير والسحب الأفقي -->
         <div class="swiper-view" id="swiper-view" ontouchstart="handleTouchStart(event)" ontouchmove="handleTouchMove(event)" ontouchend="handleTouchEnd()">
             <div class="list-panel" id="panel-chapters">
                 <div style="text-align:center; padding:20px;">جاري تحميل السور...</div>
@@ -128,16 +122,13 @@
             </div>
         </div>
 
-        <!-- مساحة عرض المصحف -->
         <div class="mushaf-slider" id="mushaf-slider"></div>
 
-        <!-- شريط التحكم الصوتي المطور والمركز في المنتصف تماماً -->
         <div class="audio-bar" id="audio-bar" onclick="event.stopPropagation();">
             <div class="audio-info-row">
                 <div id="audio-title">سورة الفاتحة</div>
-                <!-- خيار تكرار الآيات المضاف -->
                 <div class="repeat-selector">
-                    <span>تكرار الآية:</span>
+                    <span>تكرار:</span>
                     <select id="verse-repeat-select">
                         <option value="1">مرة واحدة</option>
                         <option value="2">مرتين</option>
@@ -147,7 +138,6 @@
                 </div>
             </div>
 
-            <!-- أزرار التحكم الوسطى كاملة -->
             <div class="audio-controls-mid">
                 <button class="control-btn" onclick="playNextOrPrevAyah(-1)" title="الآية السابقة">⏮️</button>
                 <button class="control-btn play-pause-btn" id="main-play-btn" onclick="togglePlayPause()" title="تشغيل / إيقاف">▶️</button>
@@ -158,7 +148,7 @@
         </div>
     </div>
 
-    <!-- نافذة الإعدادات المنبثقة -->
+    <!-- نافذة الإعدادات -->
     <div class="settings-overlay" id="settings-overlay" onclick="closeSettings()">
         <div class="settings-modal" onclick="event.stopPropagation()">
             <div class="modal-title">
@@ -167,34 +157,34 @@
             </div>
             <div class="setting-item">
                 <div class="setting-info">
-                    <span class="setting-label">الوضع الداكن (Night Mode)</span>
-                    <span class="setting-desc">تبديل ألوان التطبيق لراحة العين</span>
+                    <span class="setting-label">الوضع الداكن</span>
+                    <span class="setting-desc">تفعيل الألوان الداكنة لراحة العين</span>
                 </div>
+                <!-- تم وضع علامة الصح بشكل افتراضي لتوافق الكلاس dark-mode -->
                 <input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode()" checked style="transform: scale(1.3); cursor:pointer;">
             </div>
             <div class="setting-item">
                 <div class="setting-info">
                     <span class="setting-label">قارئك المفضل</span>
-                    <span class="setting-desc">اختر الشيخ لتلاوة الآيات عند الضغط المطول</span>
+                    <span class="setting-desc">اختر الشيخ لتلاوة الآيات</span>
                 </div>
-                <select id="reciter-dropdown" style="padding:5px; border-radius:4px; font-weight:bold;">
+                <!-- قائمة شاملة ومحدثة للقراء -->
+                <select id="reciter-dropdown" style="padding:5px; border-radius:4px; font-weight:bold; background:var(--item-bg); color:var(--text-color); border:1px solid var(--border-color);">
                     <option value="7">مشاري العفاسي</option>
-                    <option value="1">عبد الباسط عبد الصمد</option>
+                    <option value="1">عبد الباسط عبد الصمد (مجود)</option>
+                    <option value="2">عبد الباسط عبد الصمد (مرتل)</option>
                     <option value="3">عبد الرحمن السديس</option>
-                    <option value="6">ماهر المعيقلي</option>
+                    <option value="10">سعود الشريم</option>
+                    <option value="6">محمود خليل الحصري</option>
+                    <option value="4">أبو بكر الشاطري</option>
+                    <option value="12">محمود علي البنا</option>
+                    <option value="5">هاني الرفاعي</option>
                 </select>
-            </div>
-            <div class="setting-item">
-                <div class="setting-info">
-                    <span class="setting-label">المزامنة والقراءة دون نت</span>
-                    <span class="setting-desc">تحميل النصوص محلياً على الجهاز</span>
-                </div>
-                <button class="btn-action" onclick="alert('تم حفظ البيانات محلياً!')">تحميل الآن</button>
             </div>
         </div>
     </div>
 
-    <!-- نافذة المرجعيات المنبثقة -->
+    <!-- نافذة المرجعيات -->
     <div class="settings-overlay" id="bookmarks-overlay" onclick="closeBookmarks()">
         <div class="settings-modal" onclick="event.stopPropagation()">
             <div class="modal-title">
@@ -202,7 +192,7 @@
                 <span class="close-modal" onclick="closeBookmarks()">إغلاق ✕</span>
             </div>
             <div id="bookmarks-list-container" style="text-align:center; padding:10px; color:var(--text-muted);">
-                سيتم هنا حفظ العلامات المرجعية لآخر آية قمت بزيارتها تلقائياً لقراءتها لاحقاً.
+                سيتم هنا حفظ العلامات المرجعية لآخر آية قمت بزيارتها.
             </div>
         </div>
     </div>
@@ -217,7 +207,7 @@
         let versesElementsArray = [];
         let pressTimer;
         let isLongPressAction = false;
-        let repeatCounter = 1; // لتعقب التكرار الحاضر للآية
+        let repeatCounter = 1; 
 
         const swiperView = document.getElementById('swiper-view');
         const audioBar = document.getElementById('audio-bar');
@@ -244,7 +234,6 @@
             loadChaptersIndex();
             loadJuzsIndex();
             
-            // عند النقر على مساحة المصحف يتم إخفاء أو إظهار شريط الصوت فقط إذا لم يتم النقر على آية
             mushafSlider.addEventListener('click', (e) => {
                 if (currentView === 'surah' && !e.target.classList.contains('ayah-span') && !e.target.classList.contains('ayah-num')) {
                     audioBar.classList.toggle('active');
@@ -375,7 +364,6 @@
             isLongPressAction = false;
         }
 
-        /* إدارة تداخل الأحداث لحل مشكلة الصوت نهائياً */
         function pressStart(e, key) {
             e.stopPropagation();
             isLongPressAction = false;
@@ -384,10 +372,10 @@
                 let idx = versesElementsArray.findIndex(el => el.id === `ay-key-${key}`);
                 if(idx !== -1) {
                     currentVerseIndex = idx;
-                    repeatCounter = 1; // إعادة تعيين عداد التكرار
+                    repeatCounter = 1;
                     playAyahAudioStream(key);
                 }
-            }, 600); // مدة الضغط المطول المثالية
+            }, 600);
         }
 
         function pressEnd(e) {
@@ -408,23 +396,28 @@
             audioBar.classList.add('active');
             mainPlayBtn.textContent = "⏸️";
 
-            // تحديث العنوان المكتوب في لوحة التحكم
             let [sIdx, aIdx] = key.split(':');
             document.getElementById('audio-title').textContent = `سورة ${surahNamesList[parseInt(sIdx)-1]} [آية ${convertToArabicNo(aIdx)}]`;
 
+            // المشكلة السابقة كانت أننا نطلب audio_url بدلاً من url .. الآن تم التعديل
             fetch(`https://api.quran.com/api/v4/recitations/${reciter}/by_ayah/${key}`)
                 .then(r => r.json())
                 .then(data => {
                     if (data.audio_files && data.audio_files[0]) {
-                        let url = data.audio_files[0].audio_url;
-                        if(url.startsWith('//')) url = 'https:' + url;
-                        audioPlayer.src = url;
+                        let audioSrcUrl = data.audio_files[0].url || data.audio_files[0].audio_url; // جلب الرابط الصحيح
+                        if(audioSrcUrl.startsWith('//')) audioSrcUrl = 'https:' + audioSrcUrl;
+                        audioPlayer.src = audioSrcUrl;
                         audioPlayer.play().catch(() => {});
+                    } else {
+                        alert("عذراً، تلاوة هذه الآية غير متوفرة لهذا القارئ حالياً.");
+                        mainPlayBtn.textContent = "▶️";
                     }
+                }).catch(err => {
+                    console.error("Audio fetch error:", err);
+                    alert("تعذر الاتصال بخادم الصوتيات. تأكد من اتصالك بالإنترنت.");
                 });
         }
 
-        // تشغيل وإيقاف الصوت المؤقت من الزر الأوسط
         function togglePlayPause() {
             if(audioPlayer.paused) {
                 audioPlayer.play();
@@ -435,18 +428,16 @@
             }
         }
 
-        // ميزة التقديم والترجيع المضافة
         function playNextOrPrevAyah(direction) {
             let targetIndex = currentVerseIndex + direction;
             if (targetIndex >= 0 && targetIndex < versesElementsArray.length) {
                 currentVerseIndex = targetIndex;
-                repeatCounter = 1; // تصفير العداد عند التخطي اليدوي
+                repeatCounter = 1;
                 let nextKey = versesElementsArray[currentVerseIndex].id.replace('ay-key-', '');
                 playAyahAudioStream(nextKey);
             }
         }
 
-        // إدارة التكرار والمتابعة التلقائية المحدثة لعدد تكرار الآيات
         audioPlayer.addEventListener('ended', () => {
             let maxRepeat = parseInt(document.getElementById('verse-repeat-select').value);
             
@@ -455,15 +446,13 @@
                 audioPlayer.currentTime = 0;
                 audioPlayer.play().catch(() => {});
             } else {
-                // الانتقال للآية التالية تلقائياً عند انتهاء عدد مرات التكرار المحدد
                 if(currentVerseIndex < versesElementsArray.length - 1) {
                     currentVerseIndex++;
-                    repeatCounter = 1; // تصفير للآية الجديدة
+                    repeatCounter = 1;
                     let nextKey = versesElementsArray[currentVerseIndex].id.replace('ay-key-', '');
                     playAyahAudioStream(nextKey);
                 } else {
                     mainPlayBtn.textContent = "▶️";
-                    alert("تمت تلاوة السورة المباركة بنجاح.");
                 }
             }
         });
@@ -491,9 +480,10 @@
         function openBookmarks() { document.getElementById('bookmarks-overlay').style.display = 'flex'; }
         function closeBookmarks() { document.getElementById('bookmarks-overlay').style.display = 'none'; }
 
+        /* دالة تفعيل الوضع المظلم: إذا كان الزر يحتوي على علامة الصح، نضيف الكلاس المظلم */
         function toggleDarkMode() {
             let isDark = document.getElementById('dark-mode-toggle').checked;
-            document.body.classList.toggle('light-mode', !isDark);
+            document.body.classList.toggle('dark-mode', isDark);
         }
 
         function convertToArabicNo(num) {
