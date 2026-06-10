@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>القرآن المبين</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital@0;1&family=Reem+Kufi:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital@0;1&display=swap" rel="stylesheet">
     
     <style>
         @font-face {
@@ -23,12 +23,11 @@
             margin: 0; 
             padding: 0; 
             background-color: #f4f6f9; 
-            overflow: hidden; /* إيقاف النزول للأسفل بالكامل */
+            overflow: hidden; 
         }
         
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; }
         
-        /* ضبط الحاوية الرئيسية لتأخذ الشاشة بالكامل */
         .container { 
             display: flex; 
             flex-direction: column; 
@@ -39,13 +38,26 @@
             box-sizing: border-box; 
         }
         
+        /* التبويبات بالخط العادي */
         .tabs { display: flex; justify-content: center; background: #fff; margin-bottom: 10px; border-bottom: 2px solid #e0e0e0; border-radius: 8px; flex-shrink: 0;}
-        .tab { flex: 1; text-align: center; padding: 12px; font-size: 18px; font-weight: bold; cursor: pointer; color: #555; transition: 0.3s; font-family: 'Reem Kufi', sans-serif;}
+        .tab { flex: 1; text-align: center; padding: 12px; font-size: 18px; font-weight: bold; cursor: pointer; color: #555; transition: 0.3s; }
         .tab.active { color: #38b1e5; border-bottom: 4px solid #38b1e5; background: #f0f8ff; border-radius: 8px;}
         
-        .btn-back { display: none; background: #393939; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 10px; font-size: 16px; width: 100%; font-weight: bold; font-family: 'Reem Kufi', sans-serif; flex-shrink: 0;}
+        /* سهم العودة بدلاً من الزر */
+        .back-arrow {
+            display: none;
+            align-self: flex-start; /* جهة اليمين */
+            font-size: 35px;
+            color: #555;
+            cursor: pointer;
+            padding: 0px 10px;
+            margin-bottom: 10px;
+            transition: 0.2s;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .back-arrow:hover { color: #38b1e5; transform: translateX(5px); }
         
-        /* منطقة الفهرس مع تمرير عمودي خاص بها فقط */
         #content-area {
             flex: 1;
             overflow-y: auto;
@@ -56,11 +68,11 @@
         .item { padding: 15px; background: white; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .item-title { font-family: 'Amiri', serif; font-size: 20px; font-weight: bold; color: #222; }
         
-        .revelation-place { font-size: 13px; padding: 4px 8px; border-radius: 4px; font-family: 'Segoe UI', sans-serif;}
+        .revelation-place { font-size: 13px; padding: 4px 8px; border-radius: 4px; }
         .makkah { color: #2e7d32; background-color: #e8f5e9; }
         .madinah { color: #e65100; background-color: #fff3e0; }
         .bookmark-item { background-color: #f0f8ff; border: 2px solid #38b1e5; }
-        .bookmark-text { color: #0277bd; font-weight: bold; font-size: 18px; font-family: 'Reem Kufi', sans-serif;}
+        .bookmark-text { color: #0277bd; font-weight: bold; font-size: 18px; }
         
         /* ======================================================= */
         /* التمرير الأفقي المحصور لليمين واليسار فقط                  */
@@ -70,7 +82,7 @@
             flex: 1;
             width: 100%;
             overflow-x: auto;
-            overflow-y: hidden; /* يمنع التمرير العمودي لصفحة المصحف */
+            overflow-y: hidden;
             scroll-snap-type: x mandatory;
             scroll-behavior: smooth;
             -webkit-overflow-scrolling: touch;
@@ -80,7 +92,7 @@
 
         .mushaf-page {
             min-width: 100%;
-            height: 100%; /* تأخذ طول الشاشة كاملاً دون ترك فراغ أسفل */
+            height: 100%;
             box-sizing: border-box;
             scroll-snap-align: start;
             background: white; 
@@ -110,7 +122,22 @@
             width: 100%;
         }
 
+        .mushaf-header-inline {
+            font-family: 'MadinahMushaf', 'Amiri Quran', serif;
+            font-size: 24px;
+            color: #8b6508; 
+            text-align: center;
+            padding: 8px;
+            margin: 20px auto 15px auto;
+            border: 2px solid #daa520; 
+            background-color: #fffdf5; 
+            border-radius: 8px;
+            display: block;
+            width: 70%;
+        }
+
         .bismillah { font-family: 'MadinahMushaf', 'Amiri Quran', serif; font-size: 28px; display: block; margin-bottom: 20px; color: #222; }
+        .bismillah-inline { font-family: 'MadinahMushaf', 'Amiri Quran', serif; font-size: 24px; display: block; margin-bottom: 15px; color: #222; }
         
         .ayah { 
             font-family: 'MadinahMushaf', 'Amiri Quran', serif; 
@@ -136,18 +163,35 @@
             <div id="tab-juzs" class="tab" onclick="switchTab('juzs')">فهرس الأجزاء</div>
         </div>
 
-        <button id="back-btn" class="btn-back" onclick="goBack()">← العودة للفهرس</button>
+        <!-- سهم العودة لليمين -->
+        <div id="back-btn" class="back-arrow" onclick="goBack()">→</div>
         
-        <!-- منطقة الفهرس (قائمة السور/الأجزاء) -->
+        <!-- منطقة الفهرس -->
         <div id="content-area">... جاري التحميل ...</div>
         
-        <!-- منطقة صفحات المصحف (التمرير يمين ويسار فقط) -->
+        <!-- منطقة صفحات المصحف -->
         <div id="mushaf-slider-area" class="mushaf-slider"></div>
     </div>
 
     <script>
         let currentTab = 'chapters';
         let currentView = 'index'; 
+
+        // قائمة أسماء السور للتعرف عليها تلقائياً داخل الأجزاء
+        const surahNames = [
+            "الفاتحة", "البقرة", "آل عمران", "النساء", "المائدة", "الأنعام", "الأعراف", "الأنفال", "التوبة", "يونس",
+            "هود", "يوسف", "الرعد", "إبراهيم", "الحجر", "النحل", "الإسراء", "الكهف", "مريم", "طه",
+            "الأنبياء", "الحج", "المؤمنون", "النور", "الفرقان", "الشعراء", "النمل", "القصص", "العنكبوت", "الروم",
+            "لقمان", "السجدة", "الأحزاب", "سبأ", "فاطر", "يس", "الصافات", "ص", "الزمر", "غافر",
+            "فصلت", "الشورى", "الزخرف", "الدخان", "الجاثية", "الأحقاف", "محمد", "الفتح", "الحجرات", "ق",
+            "الذاريات", "الطور", "النجم", "القمر", "الرحمن", "الواقعة", "الحديد", "المجادلة", "الحشر", "الممتحنة",
+            "الصف", "الجمعة", "المنافقون", "التغابن", "الطلاق", "التحريم", "الملك", "القلم", "الحاقة", "المعارج",
+            "نوح", "الجن", "المزمل", "المدثر", "القيامة", "الإنسان", "المرسلات", "النبأ", "النازعات", "عبس",
+            "التكوير", "الانفطار", "المطففين", "الانشقاق", "البروج", "الطارق", "الأعلى", "الغاشية", "الفجر", "البلد",
+            "الشمس", "الليل", "الضحى", "الشرح", "التين", "العلق", "القدر", "البينة", "الزلزلة", "العاديات",
+            "القارعة", "التكاثر", "العصر", "الهمزة", "الفيل", "قريش", "الماعون", "الكوثر", "الكافرون", "النصر",
+            "المسد", "الإخلاص", "الفلق", "الناس"
+        ];
 
         window.onload = () => { loadChapters(); };
 
@@ -188,7 +232,7 @@
         function loadChapters() {
             currentView = 'index';
             toggleViews(false);
-            document.getElementById('content-area').innerHTML = '<div style="text-align:center; padding: 20px; font-family: Reem Kufi;">جاري تحميل السور...</div>';
+            document.getElementById('content-area').innerHTML = '<div style="text-align:center; padding: 20px;">جاري تحميل السور...</div>';
             
             fetch('https://api.quran.com/api/v4/chapters?language=ar')
                 .then(res => res.json())
@@ -223,7 +267,7 @@
         function loadJuzs() {
             currentView = 'index';
             toggleViews(false);
-            document.getElementById('content-area').innerHTML = '<div style="text-align:center; padding: 20px; font-family: Reem Kufi;">جاري تحميل الأجزاء...</div>';
+            document.getElementById('content-area').innerHTML = '<div style="text-align:center; padding: 20px;">جاري تحميل الأجزاء...</div>';
             
             let html = '';
             for(let i=1; i<=30; i++) {
@@ -241,14 +285,14 @@
             
             toggleViews(true);
             const sliderArea = document.getElementById('mushaf-slider-area');
-            sliderArea.innerHTML = '<div style="text-align:center; width:100%; padding: 20px; font-family: Reem Kufi;">جاري تحميل الآيات...</div>';
+            sliderArea.innerHTML = '<div style="text-align:center; width:100%; padding: 20px;">جاري تحميل الآيات...</div>';
 
             fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${id}`)
                 .then(res => res.json())
                 .then(data => {
                     let pagesHtml = '';
                     let versesBuffer = '';
-                    const versesPerPage = 6; // تم تقليل عدد الآيات لتفادي النزول العمودي تماماً
+                    const versesPerPage = 6; 
                     let pageCount = 0;
 
                     data.verses.forEach((v, index) => {
@@ -265,7 +309,6 @@
                             pageCount++;
                             pagesHtml += `<div class="mushaf-page">`;
                             
-                            // إضافة الترويسة في الصفحة الأولى فقط
                             if (pageCount === 1) { 
                                 pagesHtml += `<div class="mushaf-header">سُورَةُ ${name}</div>`;
                                 if (id !== 1 && id !== 9) {
@@ -289,7 +332,7 @@
             currentView = 'surah';
             toggleViews(true);
             const sliderArea = document.getElementById('mushaf-slider-area');
-            sliderArea.innerHTML = '<div style="text-align:center; width:100%; padding: 20px; font-family: Reem Kufi;">جاري تحميل الآيات...</div>';
+            sliderArea.innerHTML = '<div style="text-align:center; width:100%; padding: 20px;">جاري تحميل الآيات...</div>';
 
             fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?juz_number=${juzId}`)
                 .then(res => res.json())
@@ -298,16 +341,35 @@
                     let versesBuffer = '';
                     const versesPerPage = 6;
                     let pageCount = 0;
+                    let currentChapter = null;
 
                     data.verses.forEach((v, index) => {
-                        let verseNum = v.verse_key.split(':')[1];
-                        versesBuffer += `<span class="ayah">${v.text_uthmani}</span><span class="ayah-num">﴿${convertToArabicNumber(verseNum)}﴾</span> `;
+                        let [chapterStr, verseStr] = v.verse_key.split(':');
+                        let chapterId = parseInt(chapterStr);
+                        let verseNum = parseInt(verseStr);
+                        let text = v.text_uthmani;
+
+                        // إذا تغيرت السورة داخل الجزء، نضيف عنوان السورة الجديدة
+                        if (chapterId !== currentChapter) {
+                            currentChapter = chapterId;
+                            let surahName = surahNames[chapterId - 1];
+                            versesBuffer += `<span class="mushaf-header-inline">سُورَةُ ${surahName}</span>`;
+                            
+                            if (chapterId !== 1 && chapterId !== 9 && verseNum === 1) {
+                                versesBuffer += `<span class="bismillah-inline">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</span>`;
+                            }
+                        }
+
+                        if (chapterId !== 1 && verseNum === 1 && text.startsWith("بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ ")) {
+                            text = text.replace("بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ ", "");
+                        }
+
+                        versesBuffer += `<span class="ayah">${text}</span><span class="ayah-num">﴿${convertToArabicNumber(verseNum)}﴾</span> `;
                         
                         if ((index + 1) % versesPerPage === 0 || (index + 1) === data.verses.length) {
                             pageCount++;
                             pagesHtml += `<div class="mushaf-page">`;
                             
-                            // الترويسة في الصفحة الأولى فقط
                             if (pageCount === 1) {
                                 pagesHtml += `<div class="mushaf-header">الجُزْءُ ${convertToArabicNumber(juzId)}</div>`;
                             }
