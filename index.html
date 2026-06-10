@@ -1,35 +1,36 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>القرآن المبين</title>
-    <link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@700&family=Amiri:ital@1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital@0;1&family=Reem+Kufi:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; padding: 10px; background-color: #f4f6f9; color: #333; margin: 0; }
-        
-        /* إخفاء الهيدر القديم لأن App Inventor يحتوي على خانة علوية خاصة به */
-        .navbar { display: none; }
-
-        /* تصميم التبويبات (فهرس السور / فهرس الأجزاء) لتبدو كتطبيق احترافي */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #333; margin: 0; padding: 10px; }
         .tabs { display: flex; justify-content: center; background: #fff; margin-bottom: 15px; border-bottom: 2px solid #e0e0e0; }
         .tab { flex: 1; text-align: center; padding: 15px; font-size: 18px; font-weight: bold; cursor: pointer; color: #555; transition: 0.3s; }
         .tab.active { color: #38b1e5; border-bottom: 4px solid #38b1e5; background: #f0f8ff; }
+        .container { padding: 5px; max-width: 800px; margin: auto; }
         
-        /* تصميم القائمة وعرض العناصر */
-        .container { padding: 5px; max-width: 600px; margin: auto; }
-        .btn-back { display: none; background: #393939; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 15px; font-size: 16px; width: 100%; font-weight: bold; }
-        .item { padding: 15px; border-bottom: 1px solid #e0e0e0; font-size: 18px; background: white; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .btn-back { display: none; background: #393939; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 15px; font-size: 16px; width: 100%; font-weight: bold; font-family: 'Reem Kufi', sans-serif;}
         
-        /* مسميات السور على جهة اليسار */
+        .item { padding: 15px; background: white; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; box-shadow: 0 1px 3px rgba(0,0,0,0.05); font-family: 'Reem Kufi', sans-serif;}
+        .item:hover { background: #f9f9f9; transform: scale(1.01); }
+        
         .revelation-place { font-size: 14px; font-weight: bold; padding: 4px 8px; border-radius: 4px; }
-        .makkah { color: #2e7d32; background-color: #e8f5e9; } 
-        .madinah { color: #ef6c00; background-color: #fff3e0; } 
-
-        /* تصميم عرض الآيات بالرسم العثماني المصحفي */
-        .ayah-container { background: white; padding: 25px; border-radius: 12px; text-align: center; }
-        .ayah { font-family: 'Amiri', serif; padding: 12px; font-size: 26px; line-height: 2.2; text-align: center; word-spacing: 4px; border-bottom: 1px dashed #eee; display: inline-block; width: 100%; }
-        .ayah-num { color: #38b1e5; font-size: 18px; font-weight: bold; margin-right: 5px; }
+        .makkah { color: #2e7d32; background-color: #e8f5e9; }
+        .madinah { color: #e65100; background-color: #fff3e0; }
+        
+        /* تصميم العلامة المرجعية */
+        .bookmark-item { background-color: #e8f5e9; border: 2px solid #4caf50; }
+        .bookmark-text { color: #2e7d32; font-weight: bold; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+        
+        /* تصميم الآيات */
+        .ayah-container { background: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+        .ayah { font-family: 'Amiri', serif; font-size: 28px; line-height: 2.4; text-align: center; display: inline; color: #111;}
+        .ayah-num { color: #38b1e5; font-size: 20px; font-weight: bold; margin: 0 8px; }
+        .surah-title { font-family: 'Reem Kufi', sans-serif; color: #38b1e5; text-align: center; font-size: 24px; margin-bottom: 20px; border-bottom: 2px dashed #eee; padding-bottom: 10px;}
+        .bismillah { font-family: 'Amiri', serif; font-size: 26px; display: block; margin-bottom: 20px; color: #444; }
     </style>
 </head>
 <body>
@@ -40,94 +41,163 @@
     </div>
 
     <div class="container">
-        <button id="back-btn" class="btn-back" onclick="goBack()">← العودة للفهرس</button>
-        <div id="content-area">جاري التحميل...</div>
+        <button id="back-btn" class="btn-back" onclick="goBack()">العودة للفهرس</button>
+        <div id="content-area">... جاري التحميل ...</div>
     </div>
 
     <script>
         let currentTab = 'chapters';
+        let currentView = 'index'; 
+
         window.onload = () => { loadChapters(); };
 
         function switchTab(tab) {
+            if(currentView !== 'index') return; 
             currentTab = tab;
-            document.getElementById('back-btn').style.display = 'none';
-            document.getElementById('navigation-tabs').style.display = 'flex';
+            document.getElementById('tab-chapters').classList.remove('active');
+            document.getElementById('tab-juzs').classList.remove('active');
+            
             if (tab === 'chapters') {
                 document.getElementById('tab-chapters').classList.add('active');
-                document.getElementById('tab-juzs').classList.remove('active');
                 loadChapters();
             } else {
                 document.getElementById('tab-juzs').classList.add('active');
-                document.getElementById('tab-chapters').classList.remove('active');
                 loadJuzs();
             }
         }
 
         function loadChapters() {
-            document.getElementById('content-area').innerHTML = 'جاري تحميل السور...';
-            fetch('https://api.quran.com/api/v4/chapters')
+            currentView = 'index';
+            document.getElementById('back-btn').style.display = 'none';
+            document.getElementById('navigation-tabs').style.display = 'flex';
+            document.getElementById('content-area').innerHTML = '<div style="text-align:center; padding: 20px; font-family: Reem Kufi;">جاري تحميل السور...</div>';
+            
+            fetch('https://api.quran.com/api/v4/chapters?language=ar')
                 .then(res => res.json())
                 .then(data => {
                     let html = '';
+
+                    // --- إظهار العلامة المرجعية إن وجدت ---
+                    let savedId = localStorage.getItem('savedSurahId');
+                    let savedName = localStorage.getItem('savedSurahName');
+
+                    if (savedId && savedName) {
+                        html += `<div class="item bookmark-item" onclick="loadAyahsByChapter(${savedId}, '${savedName}')">
+                                    <span class="bookmark-text">📌 متابعة القراءة: سورة ${savedName}</span>
+                                    <span style="font-size: 14px; color: #555;">(موقعك السابق)</span>
+                                 </div>`;
+                    }
+                    // ------------------------------------
+
                     data.chapters.forEach(c => {
                         let isMakkah = c.revelation_place === 'makkah';
                         let typeText = isMakkah ? 'مكية' : 'مدنية';
                         let typeClass = isMakkah ? 'makkah' : 'madinah';
+                        
                         html += `<div class="item" onclick="loadAyahsByChapter(${c.id}, '${c.name_arabic}')">
-                                    <span>${c.id}. سورة ${c.name_arabic}</span>
+                                    <span style="font-size: 18px; font-weight: bold;">${c.id}. سورة ${c.name_arabic}</span>
                                     <span class="revelation-place ${typeClass}">${typeText}</span>
                                  </div>`;
                     });
                     document.getElementById('content-area').innerHTML = html;
+                }).catch(err => {
+                    document.getElementById('content-area').innerHTML = '<div style="text-align:center; color:red;">تأكد من اتصالك بالإنترنت</div>';
                 });
         }
 
         function loadJuzs() {
-            document.getElementById('content-area').innerHTML = 'جاري تحميل الأجزاء...';
-            fetch('https://api.quran.com/api/v4/juzs')
-                .then(res => res.json())
-                .then(data => {
-                    let html = '';
-                    data.juzs.forEach(j => {
-                        html += `<div class="item" onclick="loadAyahsByJuz(${j.juz_number})">
-                                    <span>الجزء رقم (${j.juz_number})</span>
-                                 </div>`;
-                    });
-                    document.getElementById('content-area').innerHTML = html;
-                });
-        }
-
-        function loadAyahsByChapter(chapterId, chapterName) {
-            prepareView();
-            fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${chapterId}`)
-                .then(res => res.json())
-                .then(data => { displayAyahs(data.verses); });
-        }
-
-        function loadAyahsByJuz(juzId) {
-            prepareView();
-            fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?juz_number=${juzId}`)
-                .then(res => res.json())
-                .then(data => { displayAyahs(data.verses); });
-        }
-
-        function prepareView() {
-            document.getElementById('navigation-tabs').style.display = 'none';
-            document.getElementById('back-btn').style.display = 'block';
-            document.getElementById('content-area').innerHTML = 'جاري تحميل الآيات بالرسم العثماني...';
-        }
-
-        function displayAyahs(verses) {
-            let html = '<div class="ayah-container">';
-            verses.forEach(v => {
-                let ayahNum = v.verse_key.split(':')[1];
-                html += `<span class="ayah">${v.text_uthmani} <span class="ayah-num">(${ayahNum})</span></span> `;
-            });
-            html += '</div>';
+            currentView = 'index';
+            document.getElementById('back-btn').style.display = 'none';
+            document.getElementById('navigation-tabs').style.display = 'flex';
+            document.getElementById('content-area').innerHTML = '<div style="text-align:center; padding: 20px; font-family: Reem Kufi;">جاري تحميل الأجزاء...</div>';
+            
+            let html = '';
+            for(let i=1; i<=30; i++) {
+                html += `<div class="item" style="justify-content: center;" onclick="loadAyahsByJuz(${i})">
+                            <span style="font-size: 18px; font-weight: bold;">الجزء رقم ${i}</span>
+                         </div>`;
+            }
             document.getElementById('content-area').innerHTML = html;
         }
 
-        function goBack() { switchTab(currentTab); }
+        function loadAyahsByChapter(id, name) {
+            currentView = 'surah';
+            
+            // حفظ السورة في ذاكرة الهاتف (العلامة المرجعية)
+            localStorage.setItem('savedSurahId', id);
+            localStorage.setItem('savedSurahName', name);
+
+            document.getElementById('navigation-tabs').style.display = 'none';
+            document.getElementById('back-btn').style.display = 'block';
+            document.getElementById('content-area').innerHTML = '<div style="text-align:center; padding: 20px; font-family: Reem Kufi;">جاري تحميل الآيات...</div>';
+
+            fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    let html = `<div class="ayah-container">`;
+                    html += `<div class="surah-title">سُورَةُ ${name}</div>`;
+                    
+                    // إضافة البسملة لكل السور ما عدا التوبة (9) والفاتحة (1)
+                    if (id !== 1 && id !== 9) {
+                        html += `<span class="bismillah">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</span>`;
+                    }
+
+                    data.verses.forEach(v => {
+                        let verseNum = v.verse_key.split(':')[1];
+                        let text = v.text_uthmani;
+                        
+                        // إزالة البسملة المدمجة من واجهة الـ API للآية الأولى لعدم التكرار
+                        if (id !== 1 && verseNum == 1 && text.startsWith("بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ ")) {
+                            text = text.replace("بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ ", "");
+                        }
+                        
+                        html += `<span class="ayah">${text}</span><span class="ayah-num">﴿${convertToArabicNumber(verseNum)}﴾</span> `;
+                    });
+                    html += `</div>`;
+                    document.getElementById('content-area').innerHTML = html;
+                    window.scrollTo(0, 0); // رفع الشاشة للأعلى عند فتح السورة
+                }).catch(err => {
+                    document.getElementById('content-area').innerHTML = '<div style="text-align:center; color:red;">حدث خطأ أثناء تحميل السورة</div>';
+                });
+        }
+
+        function loadAyahsByJuz(juzId) {
+            currentView = 'surah';
+            document.getElementById('navigation-tabs').style.display = 'none';
+            document.getElementById('back-btn').style.display = 'block';
+            document.getElementById('content-area').innerHTML = '<div style="text-align:center; padding: 20px; font-family: Reem Kufi;">جاري تحميل الآيات...</div>';
+
+            fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?juz_number=${juzId}`)
+                .then(res => res.json())
+                .then(data => {
+                    let html = `<div class="ayah-container">`;
+                    html += `<div class="surah-title">الجُزْءُ ${convertToArabicNumber(juzId)}</div>`;
+                    
+                    data.verses.forEach(v => {
+                        let verseNum = v.verse_key.split(':')[1];
+                        html += `<span class="ayah">${v.text_uthmani}</span><span class="ayah-num">﴿${convertToArabicNumber(verseNum)}﴾</span> `;
+                    });
+                    html += `</div>`;
+                    document.getElementById('content-area').innerHTML = html;
+                    window.scrollTo(0, 0);
+                }).catch(err => {
+                    document.getElementById('content-area').innerHTML = '<div style="text-align:center; color:red;">حدث خطأ أثناء تحميل الجزء</div>';
+                });
+        }
+
+        function goBack() {
+            if (currentTab === 'chapters') {
+                loadChapters();
+            } else {
+                loadJuzs();
+            }
+        }
+
+        // دالة لتحويل الأرقام الإنجليزية إلى أرقام عربية أصيلة للآيات
+        function convertToArabicNumber(num) {
+            const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+            return num.toString().split('').map(c => arabicNumbers[c] || c).join('');
+        }
     </script>
 </body>
 </html>
