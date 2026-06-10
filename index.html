@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>القرآن المبين</title>
     
-    <!-- استدعاء خطوط القوائم، بالإضافة لخط "أميري قرآن" كداعم خفي لمنع ظهور المربعات -->
     <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital@0;1&family=Reem+Kufi:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        /* النسخة المحسنة والمطورة من خط مصحف المدينة (حفص) لتوافق الهواتف */
         @font-face {
             font-family: 'MadinahMushaf';
             src: url('https://cdn.jsdelivr.net/npm/quran-font@1.1.2/dist/fonts/hafs.woff2') format('woff2'),
@@ -19,78 +17,105 @@
             font-display: swap;
         }
 
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #333; margin: 0; padding: 10px; overflow-x: hidden; }
+        /* منع التمرير العمودي نهائياً وإزالة كل الفراغات */
+        html, body { 
+            height: 100%; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #f4f6f9; 
+            overflow: hidden; /* إيقاف النزول للأسفل بالكامل */
+        }
         
-        .tabs { display: flex; justify-content: center; background: #fff; margin-bottom: 15px; border-bottom: 2px solid #e0e0e0; }
-        .tab { flex: 1; text-align: center; padding: 15px; font-size: 18px; font-weight: bold; cursor: pointer; color: #555; transition: 0.3s; font-family: 'Reem Kufi', sans-serif;}
-        .tab.active { color: #38b1e5; border-bottom: 4px solid #38b1e5; background: #f0f8ff; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; }
         
-        .container { padding: 5px; max-width: 800px; margin: auto; position: relative; }
+        /* ضبط الحاوية الرئيسية لتأخذ الشاشة بالكامل */
+        .container { 
+            display: flex; 
+            flex-direction: column; 
+            height: 100%; 
+            max-width: 800px; 
+            margin: auto; 
+            padding: 10px; 
+            box-sizing: border-box; 
+        }
         
-        .btn-back { display: none; background: #393939; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 15px; font-size: 16px; width: 100%; font-weight: bold; font-family: 'Reem Kufi', sans-serif; z-index: 100; position: relative;}
+        .tabs { display: flex; justify-content: center; background: #fff; margin-bottom: 10px; border-bottom: 2px solid #e0e0e0; border-radius: 8px; flex-shrink: 0;}
+        .tab { flex: 1; text-align: center; padding: 12px; font-size: 18px; font-weight: bold; cursor: pointer; color: #555; transition: 0.3s; font-family: 'Reem Kufi', sans-serif;}
+        .tab.active { color: #38b1e5; border-bottom: 4px solid #38b1e5; background: #f0f8ff; border-radius: 8px;}
         
+        .btn-back { display: none; background: #393939; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 10px; font-size: 16px; width: 100%; font-weight: bold; font-family: 'Reem Kufi', sans-serif; flex-shrink: 0;}
+        
+        /* منطقة الفهرس مع تمرير عمودي خاص بها فقط */
+        #content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 15px;
+        }
+        #content-area::-webkit-scrollbar { display: none; }
+
         .item { padding: 15px; background: white; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .item:hover { background: #f9f9f9; transform: scale(1.01); }
         .item-title { font-family: 'Amiri', serif; font-size: 20px; font-weight: bold; color: #222; }
         
         .revelation-place { font-size: 13px; padding: 4px 8px; border-radius: 4px; font-family: 'Segoe UI', sans-serif;}
         .makkah { color: #2e7d32; background-color: #e8f5e9; }
         .madinah { color: #e65100; background-color: #fff3e0; }
-        
         .bookmark-item { background-color: #f0f8ff; border: 2px solid #38b1e5; }
         .bookmark-text { color: #0277bd; font-weight: bold; font-size: 18px; font-family: 'Reem Kufi', sans-serif;}
         
         /* ======================================================= */
-        /* الهيكل الجديد لتمرير الصفحات أفقياً (يمين/يسار)           */
+        /* التمرير الأفقي المحصور لليمين واليسار فقط                  */
         /* ======================================================= */
         .mushaf-slider {
-            display: none; /* يظهر فقط عند فتح سورة */
+            display: none; 
+            flex: 1;
             width: 100%;
             overflow-x: auto;
+            overflow-y: hidden; /* يمنع التمرير العمودي لصفحة المصحف */
             scroll-snap-type: x mandatory;
             scroll-behavior: smooth;
             -webkit-overflow-scrolling: touch;
+            flex-direction: row;
         }
-        
-        /* إخفاء شريط التمرير الافتراضي لشاشة أنظف */
         .mushaf-slider::-webkit-scrollbar { display: none; }
 
         .mushaf-page {
             min-width: 100%;
+            height: 100%; /* تأخذ طول الشاشة كاملاً دون ترك فراغ أسفل */
             box-sizing: border-box;
             scroll-snap-align: start;
             background: white; 
-            padding: 25px 20px; 
+            padding: 20px 15px; 
             border-radius: 12px; 
             text-align: center; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
             direction: rtl;
-            display: inline-block;
-            vertical-align: top;
+            overflow-y: auto; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
+        .mushaf-page::-webkit-scrollbar { display: none; }
         
         .mushaf-header {
             font-family: 'MadinahMushaf', 'Amiri Quran', serif;
             font-size: 32px;
             color: #8b6508; 
             text-align: center;
-            padding: 15px;
-            margin: 10px auto 25px auto;
+            padding: 10px 15px;
+            margin: 0 auto 20px auto;
             border: 4px double #daa520; 
             background-color: #fffdf5; 
             border-radius: 8px;
             max-width: 90%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            width: 100%;
         }
 
-        .bismillah { font-family: 'MadinahMushaf', 'Amiri Quran', serif; font-size: 28px; display: block; margin-bottom: 25px; color: #222; }
+        .bismillah { font-family: 'MadinahMushaf', 'Amiri Quran', serif; font-size: 28px; display: block; margin-bottom: 20px; color: #222; }
         
         .ayah { 
             font-family: 'MadinahMushaf', 'Amiri Quran', serif; 
             font-size: 30px; 
             line-height: 2.3; 
-            text-align: center; 
-            display: inline; 
             color: #000;
         }
         
@@ -100,51 +125,25 @@
             font-size: 24px; 
             margin: 0 5px; 
         }
-
-        /* أزرار مساعدة للتصفح بالنقرات الجانبية */
-        .nav-arrow {
-            display: none;
-            position: fixed;
-            top: 55%;
-            transform: translateY(-50%);
-            background: rgba(56, 177, 229, 0.8);
-            color: white;
-            border: none;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            font-size: 24px;
-            cursor: pointer;
-            z-index: 99;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            align-items: center;
-            justify-content: center;
-        }
-        .nav-arrow:hover { background: rgba(56, 177, 229, 1); }
-        .arrow-right { right: 15px; }
-        .arrow-left { left: 15px; }
     </style>
 </head>
 <body>
 
-    <div id="navigation-tabs" class="tabs">
-        <div id="tab-chapters" class="tab active" onclick="switchTab('chapters')">فهرس السور</div>
-        <div id="tab-juzs" class="tab" onclick="switchTab('juzs')">فهرس الأجزاء</div>
-    </div>
-
     <div class="container">
+        <!-- التبويبات العلوية -->
+        <div id="navigation-tabs" class="tabs">
+            <div id="tab-chapters" class="tab active" onclick="switchTab('chapters')">فهرس السور</div>
+            <div id="tab-juzs" class="tab" onclick="switchTab('juzs')">فهرس الأجزاء</div>
+        </div>
+
         <button id="back-btn" class="btn-back" onclick="goBack()">← العودة للفهرس</button>
         
-        <!-- منطقة الفهرس والقوائم العادية -->
+        <!-- منطقة الفهرس (قائمة السور/الأجزاء) -->
         <div id="content-area">... جاري التحميل ...</div>
         
-        <!-- الحاوية المخصصة للتصفح الأفقي للمصحف -->
+        <!-- منطقة صفحات المصحف (التمرير يمين ويسار فقط) -->
         <div id="mushaf-slider-area" class="mushaf-slider"></div>
     </div>
-
-    <!-- أزرار التنقل الجانبية المساعدة للكمبيوتر أو الشاشات الواسعة -->
-    <button id="arrow-r" class="nav-arrow arrow-right" onclick="scrollSlider('right')">›</button>
-    <button id="arrow-l" class="nav-arrow arrow-left" onclick="scrollSlider('left')">‹</button>
 
     <script>
         let currentTab = 'chapters';
@@ -168,29 +167,27 @@
         }
 
         function toggleViews(showMushaf) {
+            const tabs = document.getElementById('navigation-tabs');
             const contentArea = document.getElementById('content-area');
             const sliderArea = document.getElementById('mushaf-slider-area');
-            const arrowR = document.getElementById('arrow-r');
-            const arrowL = document.getElementById('arrow-l');
+            const backBtn = document.getElementById('back-btn');
 
             if (showMushaf) {
+                tabs.style.display = 'none';
                 contentArea.style.display = 'none';
+                backBtn.style.display = 'block';
                 sliderArea.style.display = 'flex';
-                arrowR.style.display = 'flex';
-                arrowL.style.display = 'flex';
             } else {
+                tabs.style.display = 'flex';
                 contentArea.style.display = 'block';
+                backBtn.style.display = 'none';
                 sliderArea.style.display = 'none';
-                arrowR.style.display = 'none';
-                arrowL.style.display = 'none';
             }
         }
 
         function loadChapters() {
             currentView = 'index';
             toggleViews(false);
-            document.getElementById('back-btn').style.display = 'none';
-            document.getElementById('navigation-tabs').style.display = 'flex';
             document.getElementById('content-area').innerHTML = '<div style="text-align:center; padding: 20px; font-family: Reem Kufi;">جاري تحميل السور...</div>';
             
             fetch('https://api.quran.com/api/v4/chapters?language=ar')
@@ -226,8 +223,6 @@
         function loadJuzs() {
             currentView = 'index';
             toggleViews(false);
-            document.getElementById('back-btn').style.display = 'none';
-            document.getElementById('navigation-tabs').style.display = 'flex';
             document.getElementById('content-area').innerHTML = '<div style="text-align:center; padding: 20px; font-family: Reem Kufi;">جاري تحميل الأجزاء...</div>';
             
             let html = '';
@@ -241,12 +236,8 @@
 
         function loadAyahsByChapter(id, name) {
             currentView = 'surah';
-            
             localStorage.setItem('savedSurahId', id);
             localStorage.setItem('savedSurahName', name);
-
-            document.getElementById('navigation-tabs').style.display = 'none';
-            document.getElementById('back-btn').style.display = 'block';
             
             toggleViews(true);
             const sliderArea = document.getElementById('mushaf-slider-area');
@@ -255,10 +246,10 @@
             fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${id}`)
                 .then(res => res.json())
                 .then(data => {
-                    // تقسيم الآيات لصفحات أفقية (كل صفحة تحتوي تقريباً على 7 آيات لتناسب أبعاد الشاشات وتدعم التمرير)
                     let pagesHtml = '';
                     let versesBuffer = '';
-                    const versesPerPage = 7; 
+                    const versesPerPage = 6; // تم تقليل عدد الآيات لتفادي النزول العمودي تماماً
+                    let pageCount = 0;
 
                     data.verses.forEach((v, index) => {
                         let verseNum = v.verse_key.split(':')[1];
@@ -270,25 +261,25 @@
                         
                         versesBuffer += `<span class="ayah">${text}</span><span class="ayah-num">﴿${convertToArabicNumber(verseNum)}﴾</span> `;
                         
-                        // عند الوصول للحد الأقصى أو نهاية السورة نقوم بإنشاء صفحة مستقلة للتمرير الأفقي
                         if ((index + 1) % versesPerPage === 0 || (index + 1) === data.verses.length) {
+                            pageCount++;
                             pagesHtml += `<div class="mushaf-page">`;
-                            if (index < versesPerPage) { 
+                            
+                            // إضافة الترويسة في الصفحة الأولى فقط
+                            if (pageCount === 1) { 
                                 pagesHtml += `<div class="mushaf-header">سُورَةُ ${name}</div>`;
                                 if (id !== 1 && id !== 9) {
                                     pagesHtml += `<span class="bismillah">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</span>`;
                                 }
-                            } else {
-                                pagesHtml += `<div class="mushaf-header" style="font-size:20px; padding:6px; margin-bottom:15px;">سُورَةُ ${name} (تابع)</div>`;
                             }
-                            pagesHtml += versesBuffer + `</div>`;
+                            
+                            pagesHtml += `<div>${versesBuffer}</div></div>`;
                             versesBuffer = ''; 
                         }
                     });
 
                     sliderArea.innerHTML = pagesHtml;
-                    sliderArea.scrollLeft = 0; // البدء من اليمين
-                    window.scrollTo(0, 0); 
+                    sliderArea.scrollLeft = 0; 
                 }).catch(err => {
                     sliderArea.innerHTML = '<div style="text-align:center; color:red; width:100%;">حدث خطأ أثناء تحميل السورة</div>';
                 });
@@ -296,9 +287,6 @@
 
         function loadAyahsByJuz(juzId) {
             currentView = 'surah';
-            document.getElementById('navigation-tabs').style.display = 'none';
-            document.getElementById('back-btn').style.display = 'block';
-            
             toggleViews(true);
             const sliderArea = document.getElementById('mushaf-slider-area');
             sliderArea.innerHTML = '<div style="text-align:center; width:100%; padding: 20px; font-family: Reem Kufi;">جاري تحميل الآيات...</div>';
@@ -308,39 +296,32 @@
                 .then(data => {
                     let pagesHtml = '';
                     let versesBuffer = '';
-                    const versesPerPage = 8;
+                    const versesPerPage = 6;
+                    let pageCount = 0;
 
                     data.verses.forEach((v, index) => {
                         let verseNum = v.verse_key.split(':')[1];
                         versesBuffer += `<span class="ayah">${v.text_uthmani}</span><span class="ayah-num">﴿${convertToArabicNumber(verseNum)}﴾</span> `;
                         
                         if ((index + 1) % versesPerPage === 0 || (index + 1) === data.verses.length) {
-                            pagesHtml += `<div class="mushaf-page">
-                                            <div class="mushaf-header">الجُزْءُ ${convertToArabicNumber(juzId)}</div>
-                                            ${versesBuffer}
-                                         </div>`;
+                            pageCount++;
+                            pagesHtml += `<div class="mushaf-page">`;
+                            
+                            // الترويسة في الصفحة الأولى فقط
+                            if (pageCount === 1) {
+                                pagesHtml += `<div class="mushaf-header">الجُزْءُ ${convertToArabicNumber(juzId)}</div>`;
+                            }
+                            
+                            pagesHtml += `<div>${versesBuffer}</div></div>`;
                             versesBuffer = '';
                         }
                     });
 
                     sliderArea.innerHTML = pagesHtml;
                     sliderArea.scrollLeft = 0;
-                    window.scrollTo(0, 0);
                 }).catch(err => {
                     sliderArea.innerHTML = '<div style="text-align:center; color:red; width:100%;">حدث خطأ أثناء تحميل الجزء</div>';
                 });
-        }
-
-        // دالة تحريك الشاشة عند الضغط على الأزرار الجانبية المساعدة
-        function scrollSlider(direction) {
-            const slider = document.getElementById('mushaf-slider-area');
-            const pageWidth = slider.clientWidth;
-            // بما أن الصفحة باللغة العربية (RTL) فإن التحريك لليمين يكون بالطرح واليسار بالجمع
-            if (direction === 'right') {
-                slider.scrollBy({ left: pageWidth, behavior: 'smooth' });
-            } else {
-                slider.scrollBy({ left: -pageWidth, behavior: 'smooth' });
-            }
         }
 
         function goBack() {
