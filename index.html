@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>القرآن المبين</title>
     
+    <!-- استدعاء خطوط القوائم من جوجل -->
     <link href="https://fonts.googleapis.com/css2?family=Amiri:ital@0;1&family=Reem+Kufi:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        /* جلب الخط الرسمي لمصحف المدينة المطبوع (مجمع الملك فهد) */
+        /* جلب النسخة المكتملة لخط مصحف المدينة (مجمع الملك فهد) الداعمة لجميع علامات الوقف */
         @font-face {
             font-family: 'MadinahMushaf';
-            src: url('https://fonts.quran.com/kfgqpc-hafs/v1/KFGQPC-Uthmanic-Script-Hafs-Regular.woff2') format('woff2');
+            src: url('https://cdn.jsdelivr.net/gh/quran/quran.com-images@master/fonts/quran-fonts/v1/UthmanicHafs1.woff2') format('woff2');
             font-weight: normal;
             font-style: normal;
             font-display: swap;
@@ -68,7 +69,7 @@
         
         .ayah { 
             font-family: 'MadinahMushaf', serif; 
-            font-size: 30px; 
+            font-size: 32px; /* تم تعديل الحجم قليلاً ليتناسب مع الخط المكتمل */
             line-height: 2.2; 
             text-align: center; 
             display: inline; 
@@ -141,7 +142,6 @@
                         let typeText = isMakkah ? 'مكية' : 'مدنية';
                         let typeClass = isMakkah ? 'makkah' : 'madinah';
                         
-                        // تم تحويل رقم السورة (c.id) إلى أرقام عربية باستخدام الدالة
                         html += `<div class="item" onclick="loadAyahsByChapter(${c.id}, '${c.name_arabic}')">
                                     <span class="item-title">${convertToArabicNumber(c.id)}. سورة ${c.name_arabic}</span>
                                     <span class="revelation-place ${typeClass}">${typeText}</span>
