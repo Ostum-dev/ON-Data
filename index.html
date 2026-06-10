@@ -5,14 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>القرآن المبين</title>
     
-    <!-- استدعاء خطوط القوائم من جوجل -->
     <link href="https://fonts.googleapis.com/css2?family=Amiri:ital@0;1&family=Reem+Kufi:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        /* جلب خط مجمع الملك فهد لطباعة المصحف الشريف */
+        /* جلب الخط الرسمي لمصحف المدينة المطبوع (مجمع الملك فهد) */
         @font-face {
-            font-family: 'KingFahd';
-            src: url('https://cdn.jsdelivr.net/gh/quran/quran.com-images@master/fonts/quran-fonts/v1/UthmanicHafs1.woff2') format('woff2');
+            font-family: 'MadinahMushaf';
+            src: url('https://fonts.quran.com/kfgqpc-hafs/v1/KFGQPC-Uthmanic-Script-Hafs-Regular.woff2') format('woff2');
             font-weight: normal;
             font-style: normal;
             font-display: swap;
@@ -45,13 +44,13 @@
         .bookmark-text { color: #0277bd; font-weight: bold; font-size: 18px; font-family: 'Reem Kufi', sans-serif;}
         
         /* ========================================= */
-        /* تصميم صفحة السورة بخط مجمع الملك فهد      */
+        /* تصميم صفحة السورة بخط مصحف المدينة        */
         /* ========================================= */
         .ayah-container { background: white; padding: 25px 15px; border-radius: 12px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); direction: rtl;}
         
         /* ترويسة المصحف */
         .mushaf-header {
-            font-family: 'KingFahd', serif;
+            font-family: 'MadinahMushaf', serif;
             font-size: 32px;
             color: #8b6508; 
             text-align: center;
@@ -64,12 +63,12 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        /* الآيات والبسملة بخط المجمع */
-        .bismillah { font-family: 'KingFahd', serif; font-size: 28px; display: block; margin-bottom: 25px; color: #222; }
+        /* الآيات والبسملة بخط مصحف المدينة */
+        .bismillah { font-family: 'MadinahMushaf', serif; font-size: 28px; display: block; margin-bottom: 25px; color: #222; }
         
         .ayah { 
-            font-family: 'KingFahd', serif; 
-            font-size: 30px; /* تم تكبير الخط قليلاً ليناسب الرسم العثماني */
+            font-family: 'MadinahMushaf', serif; 
+            font-size: 30px; 
             line-height: 2.2; 
             text-align: center; 
             display: inline; 
@@ -77,7 +76,7 @@
         }
         
         .ayah-num { 
-            font-family: 'KingFahd', serif; 
+            font-family: 'MadinahMushaf', serif; 
             color: #b22222; 
             font-size: 24px; 
             margin: 0 5px; 
@@ -142,8 +141,9 @@
                         let typeText = isMakkah ? 'مكية' : 'مدنية';
                         let typeClass = isMakkah ? 'makkah' : 'madinah';
                         
+                        // تم تحويل رقم السورة (c.id) إلى أرقام عربية باستخدام الدالة
                         html += `<div class="item" onclick="loadAyahsByChapter(${c.id}, '${c.name_arabic}')">
-                                    <span class="item-title">${c.id}. سورة ${c.name_arabic}</span>
+                                    <span class="item-title">${convertToArabicNumber(c.id)}. سورة ${c.name_arabic}</span>
                                     <span class="revelation-place ${typeClass}">${typeText}</span>
                                  </div>`;
                     });
