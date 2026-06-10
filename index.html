@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -6,7 +7,6 @@
     <title>القرآن المبين</title>
     <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital@0;1&display=swap" rel="stylesheet">
     <style>
-        /* الألوان الفاتحة هي الافتراضية الآن لتصحيح منطق زر التفعيل */
         :root {
             --bg-color: #f4f6f9;
             --container-bg: #ffffff;
@@ -19,7 +19,6 @@
             --active-ayah: #fff59d;
         }
 
-        /* كلاس الوضع المظلم يتم تفعيله عند وضع علامة الصح */
         .dark-mode {
             --bg-color: #1a1a1a;
             --container-bg: #222222;
@@ -92,10 +91,9 @@
         .setting-info { display: flex; flex-direction: column; text-align: right; }
         .setting-label { font-weight: bold; font-size: 15px; }
         .setting-desc { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
-        .btn-action { background: var(--accent-color); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
     </style>
 </head>
-<body class="dark-mode"> <!-- التطبيق يفتح مظلماً كوضع افتراضي -->
+<body class="dark-mode">
 
     <div class="container" id="app-container">
         <div class="app-header" id="main-header">
@@ -160,7 +158,6 @@
                     <span class="setting-label">الوضع الداكن</span>
                     <span class="setting-desc">تفعيل الألوان الداكنة لراحة العين</span>
                 </div>
-                <!-- تم وضع علامة الصح بشكل افتراضي لتوافق الكلاس dark-mode -->
                 <input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode()" checked style="transform: scale(1.3); cursor:pointer;">
             </div>
             <div class="setting-item">
@@ -168,7 +165,6 @@
                     <span class="setting-label">قارئك المفضل</span>
                     <span class="setting-desc">اختر الشيخ لتلاوة الآيات</span>
                 </div>
-                <!-- قائمة شاملة ومحدثة للقراء -->
                 <select id="reciter-dropdown" style="padding:5px; border-radius:4px; font-weight:bold; background:var(--item-bg); color:var(--text-color); border:1px solid var(--border-color);">
                     <option value="7">مشاري العفاسي</option>
                     <option value="1">عبد الباسط عبد الصمد (مجود)</option>
@@ -258,6 +254,13 @@
             swiperView.style.transform = `translateX(${index * 50}%)`;
         }
 
+        // دالة لفك قفل الصوت في المتصفحات التي تتطلب تفاعلاً مباشراً
+        function unlockAudio() {
+            audioPlayer.play().then(() => {
+                audioPlayer.pause();
+            }).catch(() => {});
+        }
+
         function loadChaptersIndex() {
             let area = document.getElementById('panel-chapters');
             fetch('https://api.quran.com/api/v4/chapters?language=ar')
@@ -295,6 +298,7 @@
         }
 
         function openSurahContent(id, name) {
+            unlockAudio(); // فك قفل مشغل الصوت عند أول نقرة للمستخدم
             currentView = 'surah';
             currentSurahId = id;
             document.getElementById('audio-title').textContent = `سورة ${name}`;
@@ -307,6 +311,7 @@
         }
 
         function openJuzContent(juzId) {
+            unlockAudio(); // فك قفل مشغل الصوت
             currentView = 'surah';
             toggleMushafLayout(true);
             document.getElementById('audio-title').textContent = `الجزء ${juzId}`;
@@ -394,20 +399,37 @@
 
             let reciter = document.getElementById('reciter-dropdown').value;
             audioBar.classList.add('active');
-            mainPlayBtn.textContent = "⏸️";
+            mainPlayBtn.textContent = "⏳"; // إظهار علامة التحميل أثناء جلب الصوت
 
             let [sIdx, aIdx] = key.split(':');
             document.getElementById('audio-title').textContent = `سورة ${surahNamesList[parseInt(sIdx)-1]} [آية ${convertToArabicNo(aIdx)}]`;
 
-            // المشكلة السابقة كانت أننا نطلب audio_url بدلاً من url .. الآن تم التعديل
             fetch(`https://api.quran.com/api/v4/recitations/${reciter}/by_ayah/${key}`)
                 .then(r => r.json())
                 .then(data => {
                     if (data.audio_files && data.audio_files[0]) {
-                        let audioSrcUrl = data.audio_files[0].url || data.audio_files[0].audio_url; // جلب الرابط الصحيح
-                        if(audioSrcUrl.startsWith('//')) audioSrcUrl = 'https:' + audioSrcUrl;
+                        let audioSrcUrl = data.audio_files[0].url || data.audio_files[0].audio_url; 
+                        
+                        // الإصلاح الجذري لمشكلة الرابط الناقص
+                        if (!audioSrcUrl.startsWith('http')) {
+                            if (audioSrcUrl.startsWith('//')) {
+                                audioSrcUrl = 'https:' + audioSrcUrl;
+                            } else {
+                                // دمج الرابط مع السيرفر الصوتي لـ quran.com
+                                audioSrcUrl = 'https://audio.qurancdn.com/' + audioSrcUrl;
+                            }
+                        }
+
                         audioPlayer.src = audioSrcUrl;
-                        audioPlayer.play().catch(() => {});
+                        
+                        audioPlayer.play().then(() => {
+                            mainPlayBtn.textContent = "⏸️";
+                        }).catch(err => {
+                            // في حال قام المتصفح بحظر التشغيل التلقائي
+                            mainPlayBtn.textContent = "▶️";
+                            console.log("Play blocked by browser:", err);
+                        });
+
                     } else {
                         alert("عذراً، تلاوة هذه الآية غير متوفرة لهذا القارئ حالياً.");
                         mainPlayBtn.textContent = "▶️";
@@ -415,6 +437,7 @@
                 }).catch(err => {
                     console.error("Audio fetch error:", err);
                     alert("تعذر الاتصال بخادم الصوتيات. تأكد من اتصالك بالإنترنت.");
+                    mainPlayBtn.textContent = "▶️";
                 });
         }
 
@@ -480,7 +503,6 @@
         function openBookmarks() { document.getElementById('bookmarks-overlay').style.display = 'flex'; }
         function closeBookmarks() { document.getElementById('bookmarks-overlay').style.display = 'none'; }
 
-        /* دالة تفعيل الوضع المظلم: إذا كان الزر يحتوي على علامة الصح، نضيف الكلاس المظلم */
         function toggleDarkMode() {
             let isDark = document.getElementById('dark-mode-toggle').checked;
             document.body.classList.toggle('dark-mode', isDark);
