@@ -141,7 +141,7 @@
                 <button class="control-btn" onclick="playNextOrPrevAyah(1)" title="الآية التالية">⏭️</button>
             </div>
             
-            <audio id="audio-player" style="display:none;" crossorigin="anonymous"></audio>
+            <audio id="audio-player" style="display:none;"></audio>
         </div>
     </div>
 
@@ -200,8 +200,6 @@
         let currentSurahId = 1;
         let currentVerseIndex = 0;
         let versesElementsArray = [];
-        let pressTimer;
-        let isLongPressAction = false;
         let repeatCounter = 1; 
 
         const swiperView = document.getElementById('swiper-view');
@@ -271,7 +269,6 @@
                     });
                     area.innerHTML = html;
                 }).catch(() => {
-                    // فهرس احتياطي محلي في حال وجود مشاكل CORS بالشبكة أثناء البناء
                     let html = '';
                     surahNamesList.forEach((name, i) => {
                         html += `
@@ -310,6 +307,10 @@
             toggleMushafLayout(true);
             mushafSlider.innerHTML = '<div style="text-align:center; padding:40px;">جاري تحميل الآيات...</div>';
 
+            // تفعيل فك حظر الصوت برمجياً فور تفاعل المستخدم بفتح السورة
+            audioPlayer.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAAUA";
+            audioPlayer.play().then(() => audioPlayer.pause()).catch(()=>{});
+
             fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${id}`)
                 .then(r => r.json())
                 .then(data => { buildMushafPages(data.verses, name, id); });
@@ -320,6 +321,9 @@
             toggleMushafLayout(true);
             document.getElementById('audio-title').textContent = `الجزء ${juzId}`;
             mushafSlider.innerHTML = '<div style="text-align:center; padding:40px;">جاري تحميل الجزء...</div>';
+
+            audioPlayer.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAAUA";
+            audioPlayer.play().then(() => audioPlayer.pause()).catch(()=>{});
 
             fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?juz_number=${juzId}`)
                 .then(r => r.json())
@@ -347,12 +351,9 @@
                     text = text.replace("بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ ", "");
                 }
 
+                // تم تغيير الاستدعاء ليكون onclick عادي وبسيط جداً بدون ضغط مطول
                 versesBuffer += `<span class="ayah-span" id="ay-key-${v.verse_key}" 
-                                 onmousedown="pressStart(event, '${v.verse_key}')" 
-                                 ontouchstart="pressStart(event, '${v.verse_key}')"
-                                 onmouseup="pressEnd(event)" 
-                                 ontouchend="pressEnd(event)"
-                                 onclick="event.stopPropagation();">${text}<span class="ayah-num">﴿${convertToArabicNo(vNum)}﴾</span></span> `;
+                                 onclick="handleAyahClick(event, '${v.verse_key}')">${text}<span class="ayah-num">﴿${convertToArabicNo(vNum)}﴾</span></span> `;
                 
                 if((index + 1) % 5 === 0 || (index + 1) === verses.length) {
                     pageCount++;
@@ -370,26 +371,17 @@
             mushafSlider.scrollLeft = 0;
             versesElementsArray = Array.from(document.querySelectorAll('.ayah-span'));
             currentVerseIndex = 0;
-            isLongPressAction = false;
         }
 
-        function pressStart(e, key) {
+        // دالة النقرة السريعة والمباشرة لتشغيل الآية فوراً
+        function handleAyahClick(e, key) {
             e.stopPropagation();
-            isLongPressAction = false;
-            pressTimer = setTimeout(() => {
-                isLongPressAction = true;
-                let idx = versesElementsArray.findIndex(el => el.id === `ay-key-${key}`);
-                if(idx !== -1) {
-                    currentVerseIndex = idx;
-                    repeatCounter = 1;
-                    playAyahAudioStream(key);
-                }
-            }, 600);
-        }
-
-        function pressEnd(e) {
-            e.stopPropagation();
-            clearTimeout(pressTimer);
+            let idx = versesElementsArray.findIndex(el => el.id === `ay-key-${key}`);
+            if(idx !== -1) {
+                currentVerseIndex = idx;
+                repeatCounter = 1;
+                playAyahAudioStream(key);
+            }
         }
 
         function playAyahAudioStream(key) {
@@ -411,17 +403,17 @@
 
             document.getElementById('audio-title').textContent = `سورة ${surahNamesList[parseInt(sIdx)-1]} [آية ${convertToArabicNo(aIdx)}]`;
 
-            // استخدام سيرفر Everyayah المستقر والمهيأ للتضمين وتجاوز حماية CORS بالكامل
             let audioSrcUrl = `https://everyayah.com/data/${reciter}/${sNum}${aNum}.mp3`;
 
             audioPlayer.src = audioSrcUrl;
             audioPlayer.load();
             
+            // تشغيل مباشر متوافق تماماً مع نقرة المستخدم
             audioPlayer.play().then(() => {
                 mainPlayBtn.textContent = "⏸️";
             }).catch(err => {
                 mainPlayBtn.textContent = "▶️";
-                console.log("Audio blocked or not found:", err);
+                console.log("Playback error:", err);
             });
         }
 
