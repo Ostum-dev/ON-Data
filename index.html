@@ -4,41 +4,62 @@
     <meta charset="UTF-8">
     <title>المصحف الشريف</title>
     <style>
-        body { font-family: 'Amiri', serif; background: #121212; color: #fff; padding: 15px; }
-        .item { background: #1e1e1e; padding: 15px; margin-bottom: 8px; cursor: pointer; border-radius: 5px; }
-        #content-area { display: none; padding: 15px; background: #000; }
-        .ayah { margin-bottom: 15px; font-size: 24px; }
+        body { font-family: 'Amiri', serif; background: #121212; color: #fff; padding: 10px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; background: #333; color: white; border: none; cursor: pointer; border-radius: 5px; }
+        .tab-content { display: none; }
+        .active-tab { display: block; }
+        .item { background: #1e1e1e; padding: 12px; margin-bottom: 5px; border-bottom: 1px solid #333; cursor: pointer; display: flex; justify-content: space-between; }
+        #view-area { display: none; background: #000; padding: 20px; }
+        .ayah { margin-bottom: 15px; font-size: 22px; line-height: 2; }
     </style>
 </head>
 <body>
 
-    <div id="list-area">
-        <!-- مثال لسورة الفاتحة (رقم 1) -->
-        <div class="item" onclick="loadSurah(1, 'سورة الفاتحة')">١. الفاتحة</div>
-        <!-- مثال لسورة البقرة (رقم 2) -->
-        <div class="item" onclick="loadSurah(2, 'سورة البقرة')">٢. البقرة</div>
+    <div id="main-ui">
+        <div class="tabs">
+            <button class="tab-btn" onclick="showTab('surahs')">السور</button>
+            <button class="tab-btn" onclick="showTab('parts')">الأجزاء</button>
+        </div>
+
+        <div id="surahs" class="tab-content active-tab">
+            <div class="item" onclick="loadSurah(1, 'الفاتحة')"><span>١. الفاتحة</span> <small>مكية</small></div>
+            <div class="item" onclick="loadSurah(2, 'البقرة')"><span>٢. البقرة</span> <small>مدنية</small></div>
+            <div class="item" onclick="loadSurah(3, 'آل عمران')"><span>٣. آل عمران</span> <small>مدنية</small></div>
+        </div>
+
+        <div id="parts" class="tab-content">
+            <div class="item">الجزء ١ - ٣٠</div>
+        </div>
     </div>
 
-    <div id="content-area">
+    <div id="view-area">
         <h2 id="s-title"></h2>
         <div id="ayahs-container"></div>
-        <button onclick="document.getElementById('content-area').style.display='none'; document.getElementById('list-area').style.display='block';">عودة للقائمة</button>
+        <button onclick="backToList()" style="padding: 10px; width: 100%;">العودة للقائمة</button>
     </div>
 
     <script>
-        async function loadSurah(surahNumber, title) {
-            document.getElementById('s-title').innerText = title;
-            document.getElementById('list-area').style.display = 'none';
-            document.getElementById('content-area').style.display = 'block';
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
+            document.getElementById(id).classList.add('active-tab');
+        }
+
+        async function loadSurah(num, name) {
+            document.getElementById('main-ui').style.display = 'none';
+            document.getElementById('view-area').style.display = 'block';
+            document.getElementById('s-title').innerText = "سورة " + name;
             
-            const response = await fetch(`https://quranapi.pages.dev/api/surah/${surahNumber}`);
-            const data = await response.json();
-            
+            const res = await fetch(`https://quranapi.pages.dev/api/surah/${num}`);
+            const data = await res.json();
             let html = "";
-            data.arabic.forEach(ayah => {
-                html += `<p class="ayah">${ayah.text} ﴿${ayah.id}﴾</p>`;
-            });
+            data.arabic.forEach(a => html += `<p class="ayah">${a.text} ﴿${a.id}﴾</p>`);
             document.getElementById('ayahs-container').innerHTML = html;
+        }
+
+        function backToList() {
+            document.getElementById('main-ui').style.display = 'block';
+            document.getElementById('view-area').style.display = 'none';
         }
     </script>
 </body>
