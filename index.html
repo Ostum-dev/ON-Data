@@ -2,281 +2,41 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>القرآن المبين</title>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital@0;1&display=swap" rel="stylesheet">
+    <title>المصحف الميسر</title>
     <style>
-        :root {
-            --bg-color: #f4f6f9;
-            --container-bg: #ffffff;
-            --text-color: #333333;
-            --text-muted: #666666;
-            --border-color: #e0e0e0;
-            --accent-color: #0288d1;
-            --header-gold: #8b6508;
-            --item-bg: #f9f9f9;
-            --active-ayah: #fff59d;
-        }
-
-        .dark-mode {
-            --bg-color: #1a1a1a;
-            --container-bg: #222222;
-            --text-color: #ffffff;
-            --text-muted: #aaaaaa;
-            --border-color: #333333;
-            --accent-color: #38b1e5;
-            --header-gold: #daa520;
-            --item-bg: #282828;
-            --active-ayah: #443e1d;
-        }
-
-        html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color); overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background 0.3s, color 0.3s; user-select: none; -webkit-user-select: none; }
-        
-        .container { display: flex; flex-direction: column; height: 100%; max-width: 600px; margin: auto; background: var(--container-bg); position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.2); transition: background 0.3s; }
-        
-        .app-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
-        .app-title { font-size: 22px; font-weight: normal; color: var(--text-color); } 
-        
-        .tabs { display: flex; border-bottom: 2px solid var(--border-color); flex-shrink: 0; background: var(--container-bg); }
-        .tab { flex: 1; text-align: center; padding: 15px; font-size: 16px; font-weight: bold; cursor: pointer; color: var(--text-muted); transition: 0.3s; position: relative; }
-        .tab.active { color: var(--accent-color); }
-        .tab.active::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 3px; background: var(--accent-color); }
-
-        .swiper-view { flex: 1; display: flex; width: 200%; transition: transform 0.3s ease-out; height: 100%; }
-        .list-panel { width: 50%; height: 100%; overflow-y: auto; padding: 10px 20px; box-sizing: border-box; }
-        .list-panel::-webkit-scrollbar { display: none; }
-
-        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 18px 15px; background: var(--item-bg); margin-bottom: 2px; cursor: pointer; transition: 0.2s; border-bottom: 1px solid var(--border-color); }
-        .item-row:hover { background: var(--border-color); }
-        .item-center { display: flex; flex-direction: column; align-items: center; text-align: center; flex: 1; }
-        .item-main-title { font-family: 'Amiri', serif; font-size: 20px; font-weight: bold; color: var(--text-color); }
-        .item-sub-title { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
-        .item-side-num { font-size: 16px; color: var(--text-muted); width: 40px; text-align: right; }
-
-        .back-btn { display: none; padding: 15px; font-size: 18px; cursor: pointer; align-self: flex-start; color: var(--accent-color); font-weight: bold; }
-        .mushaf-slider { display: none; flex: 1; width: 100%; overflow-x: auto; scroll-snap-type: x mandatory; direction: rtl; }
-        .mushaf-page { min-width: 100%; height: 100%; box-sizing: border-box; scroll-snap-align: start; padding: 20px; overflow-y: auto; text-align: center; }
-        .mushaf-page::-webkit-scrollbar { display: none; }
-        .mushaf-surah-title { font-family: 'Amiri Quran', serif; font-size: 30px; color: var(--header-gold); margin-bottom: 20px; border: 3px double var(--header-gold); padding: 10px; border-radius: 8px; }
-        
-        .ayah-span { font-family: 'Amiri Quran', serif; font-size: 26px; line-height: 2.2; cursor: pointer; padding: 2px 6px; border-radius: 4px; display: inline; transition: background-color 0.2s; -webkit-tap-highlight-color: transparent; }
-        .ayah-span.active-reciting { background-color: var(--active-ayah) !important; border-radius: 4px; color: var(--text-color); }
-        .ayah-num { font-family: 'Amiri Quran', serif; color: #b22222; font-size: 22px; margin: 0 3px; display: inline-block; }
-
-        .audio-bar { position: absolute; bottom: -220px; left: 0; right: 0; background: var(--container-bg); border-top: 1px solid var(--border-color); padding: 15px 20px; transition: bottom 0.3s; z-index: 2500; display: flex; flex-direction: column; align-items: center; gap: 10px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); }
-        .audio-bar.active { bottom: 0; }
-        
-        .audio-info-row { width: 100%; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
-        #audio-title { font-weight: bold; color: var(--accent-color); }
-        
-        .audio-controls-mid { display: flex; align-items: center; justify-content: center; gap: 25px; margin: 5px 0; width: 100%; }
-        .control-btn { font-size: 24px; cursor: pointer; background: none; border: none; color: var(--text-color); transition: 0.2s; }
-        .play-pause-btn { font-size: 36px; color: var(--accent-color); }
+        body { font-family: sans-serif; background: #121212; color: #fff; padding: 20px; text-align: center; }
+        .surah { background: #1e1e1e; padding: 15px; margin: 10px; cursor: pointer; border-radius: 8px; border: 1px solid #333; }
     </style>
 </head>
-<body class="dark-mode">
-
-    <div class="container" id="app-container">
-        <div class="app-header" id="main-header">
-            <div class="app-title">القرآن المبين (النسخة المحلية)</div>
-        </div>
-
-        <div class="tabs" id="main-tabs">
-            <div class="tab active" id="tab-0" onclick="setPanelIndex(0)">سورة</div>
-            <div class="tab" id="tab-1" onclick="setPanelIndex(1)">الجزء</div>
-        </div>
-
-        <div class="back-btn" id="back-button" onclick="exitMushafView()">→ العودة للفهرس</div>
-
-        <div class="swiper-view" id="swiper-view">
-            <div class="list-panel" id="panel-chapters">
-                <div style="text-align:center; padding:20px;">جاري تحميل السور...</div>
-            </div>
-            <div class="list-panel" id="panel-juzs">
-                <div style="text-align:center; padding:20px;">جاري إعداد الأجزاء...</div>
-            </div>
-        </div>
-
-        <div class="mushaf-slider" id="mushaf-slider"></div>
-
-        <div class="audio-bar" id="audio-bar">
-            <div class="audio-info-row">
-                <div id="audio-title">سورة الفاتحة</div>
-            </div>
-
-            <div class="audio-controls-mid">
-                <button class="control-btn" onclick="playNextOrPrevAyah(-1)">⏮️</button>
-                <button class="control-btn play-pause-btn" id="main-play-btn" onclick="togglePlayPause()">▶️</button>
-                <button class="control-btn" onclick="playNextOrPrevAyah(1)">⏭️</button>
-            </div>
-            
-            <audio id="audio-player" style="display:none;"></audio>
-        </div>
-    </div>
+<body>
+    <h1>قائمة السور</h1>
+    <audio id="audioPlayer" controls style="width: 100%; margin-top: 20px;"></audio>
+    <div id="list"></div>
 
     <script>
-        let currentPanelIndex = 0;
-        let currentView = 'index';
-        let currentVerseIndex = 0;
-        let versesElementsArray = [];
+        // ضع هنا رابط مشروعك من سوبابيس (بدون شرطة مائلة في النهاية)
+        const PROJECT_URL = "https://dkwmbyqjsjaqvokfbzfk.supabase.co";
+        const BUCKET = "quran-audio";
 
-        const swiperView = document.getElementById('swiper-view');
-        const audioBar = document.getElementById('audio-bar');
-        const audioPlayer = document.getElementById('audio-player');
-        const mushafSlider = document.getElementById('mushaf-slider');
-        const mainPlayBtn = document.getElementById('main-play-btn');
-
-        const surahNamesList = [
-            "الفاتحة", "البقرة", "آل عمران", "النساء", "المائدة", "الأنعام", "الأعراف", "الأنفال", "التوبة", "يونس",
-            "هود", "يوسف", "الرعد", "إبراهيم", "الحجر", "النحل", "الإسراء", "الكهف", "مريم", "طه",
-            "الأنبياء", "الحج", "المؤمنون", "النور", "الفرقان", "الشعراء", "النمل", "القصص", "العنكبوت", "الروم"
-            // تم تقليل القائمة للتوضيح، يمكنك إضافة الباقي
+        const surahs = [
+            { id: "001", name: "الفاتحة" },
+            { id: "002", name: "البقرة" }
         ];
 
-        window.onload = () => {
-            loadChaptersIndex();
-            loadJuzsIndex();
-        };
+        const list = document.getElementById('list');
+        const player = document.getElementById('audioPlayer');
 
-        function setPanelIndex(index) {
-            document.getElementById('tab-0').classList.toggle('active', index === 0);
-            document.getElementById('tab-1').classList.toggle('active', index === 1);
-            swiperView.style.transform = `translateX(${index * 50}%)`;
-        }
-
-        function loadChaptersIndex() {
-            let area = document.getElementById('panel-chapters');
-            fetch('https://api.quran.com/api/v4/chapters?language=ar')
-                .then(r => r.json())
-                .then(data => {
-                    let html = '';
-                    data.chapters.forEach(c => {
-                        html += `
-                        <div class="item-row" onclick="openSurahContent(${c.id}, '${c.name_arabic}')">
-                            <span class="item-side-num">${c.id}</span>
-                            <div class="item-center">
-                                <span class="item-main-title">سُورَةُ ${c.name_arabic}</span>
-                                <span class="item-sub-title">${c.verses_count} آية</span>
-                            </div>
-                        </div>`;
-                    });
-                    area.innerHTML = html;
-                });
-        }
-
-        function loadJuzsIndex() {
-            document.getElementById('panel-juzs').innerHTML = '<div style="padding:20px;text-align:center;">القائمة جاهزة</div>';
-        }
-
-        function openSurahContent(id, name) {
-            currentView = 'surah';
-            toggleMushafLayout(true);
-            mushafSlider.innerHTML = '<div style="text-align:center; padding:40px;">جاري تحميل الآيات...</div>';
-
-            fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${id}`)
-                .then(r => r.json())
-                .then(data => { buildMushafPages(data.verses, name); });
-        }
-
-        function buildMushafPages(verses, title) {
-            let html = `<div class="mushaf-page"><div class="mushaf-surah-title">سُورَةُ ${title}</div><div>`;
-            
-            verses.forEach((v, index) => {
-                let [chNum, vNum] = v.verse_key.split(':');
-                let text = v.text_uthmani;
-
-                html += `<span class="ayah-span" id="ay-key-${v.verse_key}" 
-                         onclick="handleAyahClick(event, '${v.verse_key}')">${text}<span class="ayah-num">﴿${vNum}﴾</span></span> `;
-            });
-
-            html += `</div></div>`;
-            mushafSlider.innerHTML = html;
-            versesElementsArray = Array.from(document.querySelectorAll('.ayah-span'));
-        }
-
-        function handleAyahClick(e, key) {
-            e.stopPropagation();
-            let idx = versesElementsArray.findIndex(el => el.id === `ay-key-${key}`);
-            if(idx !== -1) {
-                currentVerseIndex = idx;
-                playAyahAudioStream(key);
-            }
-        }
-
-        function playAyahAudioStream(key) {
-            versesElementsArray.forEach(el => el.classList.remove('active-reciting'));
-            let el = document.getElementById(`ay-key-${key}`);
-            if(el) {
-                el.classList.add('active-reciting');
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-
-            audioBar.classList.add('active');
-            mainPlayBtn.textContent = "⏳"; 
-
-            let [sIdx, aIdx] = key.split(':');
-            let sNum = sIdx.padStart(3, '0');
-            let aNum = aIdx.padStart(3, '0');
-
-            document.getElementById('audio-title').textContent = `سورة [آية ${aIdx}]`;
-
-            // ⚠️ السطر السحري: هنا نقرأ الصوت من مجلد المشروع مباشرة ⚠️
-            let audioSrcUrl = `audio/${sNum}${aNum}.mp3`;
-
-            audioPlayer.src = audioSrcUrl;
-            audioPlayer.load();
-            
-            audioPlayer.play().then(() => {
-                mainPlayBtn.textContent = "⏸️";
-            }).catch(err => {
-                mainPlayBtn.textContent = "▶️";
-                alert(`لم يتم العثور على ملف الصوت. يرجى التأكد من رفع الملف باسم ${sNum}${aNum}.mp3 داخل مجلد audio في GitHub.`);
-            });
-        }
-
-        function togglePlayPause() {
-            if(audioPlayer.paused) {
-                audioPlayer.play().catch(()=>{});
-                mainPlayBtn.textContent = "⏸️";
-            } else {
-                audioPlayer.pause();
-                mainPlayBtn.textContent = "▶️";
-            }
-        }
-
-        function playNextOrPrevAyah(direction) {
-            let targetIndex = currentVerseIndex + direction;
-            if (targetIndex >= 0 && targetIndex < versesElementsArray.length) {
-                currentVerseIndex = targetIndex;
-                let nextKey = versesElementsArray[currentVerseIndex].id.replace('ay-key-', '');
-                playAyahAudioStream(nextKey);
-            }
-        }
-
-        audioPlayer.addEventListener('ended', () => {
-            if(currentVerseIndex < versesElementsArray.length - 1) {
-                currentVerseIndex++;
-                let nextKey = versesElementsArray[currentVerseIndex].id.replace('ay-key-', '');
-                playAyahAudioStream(nextKey);
-            } else {
-                mainPlayBtn.textContent = "▶️";
-            }
+        surahs.forEach(s => {
+            let div = document.createElement('div');
+            div.className = 'surah';
+            div.innerText = "سورة " + s.name;
+            div.onclick = () => {
+                // الرابط المباشر للملف
+                player.src = `${PROJECT_URL}/storage/v1/object/public/${BUCKET}/${s.id}.mp3`;
+                player.play();
+            };
+            list.appendChild(div);
         });
-
-        function toggleMushafLayout(show) {
-            document.getElementById('main-header').style.display = show ? 'none' : 'flex';
-            document.getElementById('main-tabs').style.display = show ? 'none' : 'flex';
-            swiperView.style.display = show ? 'none' : 'flex';
-            document.getElementById('back-button').style.display = show ? 'block' : 'none';
-            mushafSlider.style.display = show ? 'flex' : 'none';
-        }
-
-        function exitMushafView() {
-            currentView = 'index';
-            toggleMushafLayout(false);
-            audioBar.classList.remove('active');
-            audioPlayer.pause();
-        }
     </script>
 </body>
 </html>
