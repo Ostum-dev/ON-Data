@@ -4,33 +4,35 @@
     <meta charset="UTF-8">
     <title>المصحف الشريف</title>
     <style>
-        body { font-family: 'Amiri', serif; background: #f9f9f9; padding: 15px; }
-        .tab-btn { padding: 10px; cursor: pointer; background: #ddd; border: none; width: 48%; }
-        .tab-content { display: none; margin-top: 20px; }
-        .active { display: block; }
-        .item { background: #fff; padding: 15px; margin-bottom: 5px; border-bottom: 1px solid #eee; text-align: right; }
-        .type { color: #888; font-size: 14px; margin-right: 10px; }
+        body { font-family: 'Amiri', serif; background: #121212; color: #fff; padding: 15px; }
+        .item { background: #1e1e1e; padding: 15px; margin-bottom: 8px; cursor: pointer; border-radius: 5px; }
+        .item:hover { background: #333; }
+        #content-area { margin-top: 20px; padding: 15px; background: #000; border: 1px solid #333; display: none; }
     </style>
 </head>
 <body>
 
-    <button class="tab-btn" onclick="showTab('surahs')">السور</button>
-    <button class="tab-btn" onclick="showTab('parts')">الأجزاء</button>
-
-    <div id="surahs" class="tab-content active">
-        <div class="item">١. الفاتحة <span class="type">مكية</span></div>
-        <div class="item">٢. البقرة <span class="type">مدنية</span></div>
+    <div id="list-area">
+        <div class="item" onclick="showAyahs('سورة الفاتحة', 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ <br> الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ...')">
+            ١. الفاتحة <span style="color:#aaa; float:left;">مكية</span>
+        </div>
+        <div class="item" onclick="showAyahs('سورة البقرة', 'الم (١) ذَٰلِكَ الْكِتَابُ لَا رَيْبَ ۛ فِيهِ ۛ هُدًى لِّلْمُتَّقِينَ...')">
+            ٢. البقرة <span style="color:#aaa; float:left;">مدنية</span>
+        </div>
         </div>
 
-    <div id="parts" class="tab-content">
-        <div class="item">الجزء ١</div>
-        <div class="item">الجزء ٢</div>
-        </div>
+    <div id="content-area">
+        <h2 id="s-title"></h2>
+        <p id="s-text" style="font-size: 20px; line-height: 2.5;"></p>
+        <button onclick="document.getElementById('content-area').style.display='none'; document.getElementById('list-area').style.display='block';">عودة للقائمة</button>
+    </div>
 
     <script>
-        function showTab(id) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+        function showAyahs(title, text) {
+            document.getElementById('s-title').innerText = title;
+            document.getElementById('s-text').innerHTML = text;
+            document.getElementById('list-area').style.display = 'none';
+            document.getElementById('content-area').style.display = 'block';
         }
     </script>
 </body>
