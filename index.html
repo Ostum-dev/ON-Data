@@ -6,33 +6,39 @@
     <style>
         body { font-family: 'Amiri', serif; background: #121212; color: #fff; padding: 15px; }
         .item { background: #1e1e1e; padding: 15px; margin-bottom: 8px; cursor: pointer; border-radius: 5px; }
-        .item:hover { background: #333; }
-        #content-area { margin-top: 20px; padding: 15px; background: #000; border: 1px solid #333; display: none; }
+        #content-area { display: none; padding: 15px; background: #000; }
+        .ayah { margin-bottom: 15px; font-size: 24px; }
     </style>
 </head>
 <body>
 
     <div id="list-area">
-        <div class="item" onclick="showAyahs('سورة الفاتحة', 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ <br> الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ...')">
-            ١. الفاتحة <span style="color:#aaa; float:left;">مكية</span>
-        </div>
-        <div class="item" onclick="showAyahs('سورة البقرة', 'الم (١) ذَٰلِكَ الْكِتَابُ لَا رَيْبَ ۛ فِيهِ ۛ هُدًى لِّلْمُتَّقِينَ...')">
-            ٢. البقرة <span style="color:#aaa; float:left;">مدنية</span>
-        </div>
-        </div>
+        <!-- مثال لسورة الفاتحة (رقم 1) -->
+        <div class="item" onclick="loadSurah(1, 'سورة الفاتحة')">١. الفاتحة</div>
+        <!-- مثال لسورة البقرة (رقم 2) -->
+        <div class="item" onclick="loadSurah(2, 'سورة البقرة')">٢. البقرة</div>
+    </div>
 
     <div id="content-area">
         <h2 id="s-title"></h2>
-        <p id="s-text" style="font-size: 20px; line-height: 2.5;"></p>
+        <div id="ayahs-container"></div>
         <button onclick="document.getElementById('content-area').style.display='none'; document.getElementById('list-area').style.display='block';">عودة للقائمة</button>
     </div>
 
     <script>
-        function showAyahs(title, text) {
+        async function loadSurah(surahNumber, title) {
             document.getElementById('s-title').innerText = title;
-            document.getElementById('s-text').innerHTML = text;
             document.getElementById('list-area').style.display = 'none';
             document.getElementById('content-area').style.display = 'block';
+            
+            const response = await fetch(`https://quranapi.pages.dev/api/surah/${surahNumber}`);
+            const data = await response.json();
+            
+            let html = "";
+            data.arabic.forEach(ayah => {
+                html += `<p class="ayah">${ayah.text} ﴿${ayah.id}﴾</p>`;
+            });
+            document.getElementById('ayahs-container').innerHTML = html;
         }
     </script>
 </body>
