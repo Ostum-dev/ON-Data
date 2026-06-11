@@ -2,49 +2,36 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المصحف الكريم</title>
+    <title>المصحف الشريف</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Amiri&display=swap');
-        body { 
-            font-family: 'Amiri', serif; 
-            padding: 20px; 
-            line-height: 2.8; 
-            font-size: 24px; 
-            background-color: #ffffff; 
-            color: #000; 
-            text-align: justify;
-        }
-        .surah-title { 
-            text-align: center; 
-            color: #2c3e50; 
-            font-size: 32px; 
-            font-weight: bold; 
-            margin-bottom: 5px; 
-            border-bottom: 2px solid #daa520; 
-            padding-bottom: 10px;
-        }
-        /* تصميم خاص لعدد الآيات */
-        .ayah-count { 
-            text-align: center; 
-            color: #7f8c8d; 
-            font-size: 18px; 
-            margin-bottom: 20px; 
-        }
-        .basmala { text-align: center; color: #8b6508; font-weight: bold; margin-bottom: 20px; font-size: 28px; }
+        body { font-family: 'Amiri', serif; background: #f9f9f9; padding: 15px; }
+        .tab-btn { padding: 10px; cursor: pointer; background: #ddd; border: none; width: 48%; }
+        .tab-content { display: none; margin-top: 20px; }
+        .active { display: block; }
+        .item { background: #fff; padding: 15px; margin-bottom: 5px; border-bottom: 1px solid #eee; text-align: right; }
+        .type { color: #888; font-size: 14px; margin-right: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="surah-title">سورة الفاتحة</div>
-    
-    <div class="ayah-count"> مكية</div>
-    
-    <div class="basmala">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
-    
-    <p>
-        الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ (١) الرَّحْمَٰنِ الرَّحِيمِ (٢) مَالِكِ يَوْمِ الدِّينِ (٣) إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ (٤) اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ (٥) صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ (٦)
-    </p>
+    <button class="tab-btn" onclick="showTab('surahs')">السور</button>
+    <button class="tab-btn" onclick="showTab('parts')">الأجزاء</button>
 
+    <div id="surahs" class="tab-content active">
+        <div class="item">١. الفاتحة <span class="type">مكية</span></div>
+        <div class="item">٢. البقرة <span class="type">مدنية</span></div>
+        </div>
+
+    <div id="parts" class="tab-content">
+        <div class="item">الجزء ١</div>
+        <div class="item">الجزء ٢</div>
+        </div>
+
+    <script>
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+    </script>
 </body>
 </html>
