@@ -5,7 +5,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout Code
+      uses: actions/checkout@v4
     
     - name: Setup Java
       uses: actions/setup-java@v4
@@ -13,27 +14,21 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         
-    - name: Install Gradle
-      run: |
-        wget https://services.gradle.org/distributions/gradle-8.1-bin.zip
-        unzip -q gradle-8.1-bin.zip
-        mv gradle-8.1 /opt/gradle
-        echo "GRADLE_HOME=/opt/gradle" >> $GITHUB_ENV
-        echo "PATH=/opt/gradle/bin:$PATH" >> $GITHUB_ENV
-
-    - name: Generate App Structure
+    - name: Build with Gradle
       run: |
         mkdir -p app/src/main/java/com/alquran/almobin
         echo "apply plugin: 'com.android.application'
         android { namespace 'com.alquran.almobin'; compileSdk 33; defaultConfig { applicationId 'com.alquran.almobin'; minSdk 21; targetSdk 33 } }" > app/build.gradle
         echo "include ':app'" > settings.gradle
         echo "buildscript { dependencies { classpath 'com.android.tools.build:gradle:8.1.0' } }" > build.gradle
-
-    - name: Build APK
-      run: gradle assembleDebug
+        
+        # تحميل وتثبيت Gradle تلقائياً لضمان عدم حدوث خطأ 127
+        wget -q https://services.gradle.org/distributions/gradle-8.1-bin.zip
+        unzip -q gradle-8.1-bin.zip
+        ./gradle-8.1/bin/gradle assembleDebug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: Alquran-Almobin
+        name: Alquran-Almobin-APK
         path: app/build/outputs/apk/debug/*.apk
