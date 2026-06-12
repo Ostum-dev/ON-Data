@@ -8,9 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -21,6 +18,9 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+
     - name: Generate App Structure
       run: |
         mkdir -p app/src/main/java/com/alquran/almobin
@@ -28,8 +28,8 @@ jobs:
         mkdir -p app/src/main/res/mipmap-hdpi
         
         echo "include ':app'" > settings.gradle
-        echo "rootProject.name = 'Alquran Almobin'" >> settings.gradle
-
+        echo "org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8" > gradle.properties
+        
         cat << 'EOF' > build.gradle
         buildscript {
             repositories { google(); mavenCentral() }
@@ -83,7 +83,7 @@ jobs:
         EOF
 
     - name: Build with Gradle
-      run: chmod +x gradlew && ./gradlew assembleDebug || gradle assembleDebug
+      run: ./gradlew assembleDebug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
