@@ -1,28 +1,29 @@
-name: Build Android APK
+name: Build APK
+
 on: [push, workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Code
+    - name: Checkout
       uses: actions/checkout@v4
-    
+      
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
         
-    - name: Build with Gradle
+    - name: Minimal Build
       run: |
-        mkdir -p app/src/main/java/com/alquran/almobin
+        mkdir -p app/src/main/java/com/web/app
         echo "apply plugin: 'com.android.application'
-        android { namespace 'com.alquran.almobin'; compileSdk 33; defaultConfig { applicationId 'com.alquran.almobin'; minSdk 21; targetSdk 33 } }" > app/build.gradle
+        android { namespace 'com.web.app'; compileSdk 33; defaultConfig { applicationId 'com.web.app'; minSdk 21; targetSdk 33 } }" > app/build.gradle
         echo "include ':app'" > settings.gradle
         echo "buildscript { dependencies { classpath 'com.android.tools.build:gradle:8.1.0' } }" > build.gradle
         
-        # تحميل وتثبيت Gradle تلقائياً لضمان عدم حدوث خطأ 127
+        # تحميل وتثبيت Gradle
         wget -q https://services.gradle.org/distributions/gradle-8.1-bin.zip
         unzip -q gradle-8.1-bin.zip
         ./gradle-8.1/bin/gradle assembleDebug
@@ -30,5 +31,5 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: Alquran-Almobin-APK
+        name: My-App
         path: app/build/outputs/apk/debug/*.apk
