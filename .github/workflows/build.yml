@@ -15,18 +15,15 @@ jobs:
 
     - name: Generate All Android Project Files Automatically
       run: |
-        # 1. إنشاء هيكل المجلدات بالكامل داخل الخادم
         mkdir -p app/src/main/java/com/alquran/almobin
         mkdir -p app/src/main/res/layout
         mkdir -p app/src/main/res/mipmap-hdpi
         
-        # 2. توليد ملف الإعدادات settings.gradle
         cat << 'EOF' > settings.gradle
         include ':app'
         rootProject.name = "Alquran Almobin"
         EOF
         
-        # 3. توليد ملف build.gradle الرئيسي
         cat << 'EOF' > build.gradle
         buildscript {
             repositories {
@@ -45,7 +42,11 @@ jobs:
         }
         EOF
         
-        # 4. توليد ملف إعدادات التطبيق app/build.gradle
+        cat << 'EOF' > gradle.properties
+        android.useAndroidX=true
+        android.enableJetifier=true
+        EOF
+        
         cat << 'EOF' > app/build.gradle
         plugins {
             id 'com.android.application'
@@ -71,7 +72,6 @@ jobs:
         }
         EOF
         
-        # 5. توليد ملف واجهة الشاشة activity_main.xml
         cat << 'EOF' > app/src/main/res/layout/activity_main.xml
         <?xml version="1.0" encoding="utf-8"?>
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -84,7 +84,6 @@ jobs:
         </RelativeLayout>
         EOF
         
-        # 6. توليد ملف الصلاحيات والاسم العربي AndroidManifest.xml
         cat << 'EOF' > app/src/main/AndroidManifest.xml
         <?xml version="1.0" encoding="utf-8"?>
         <manifest xmlns:android="http://schemas.android.com/apk/res/android">
@@ -111,7 +110,6 @@ jobs:
         </manifest>
         EOF
         
-        # 7. توليد كود الجافا المشغل للموقع والصوت المستمر MainActivity.java
         cat << 'EOF' > app/src/main/java/com/alquran/almobin/MainActivity.java
         package com.alquran.almobin;
         import android.annotation.SuppressLint;
@@ -155,7 +153,6 @@ jobs:
 
     - name: Auto Handle App Logo
       run: |
-        # فحص وجود شعارك المرفوع وتثبيته كأيقونة رسمية
         if [ -f "logo.png" ]; then
           cp logo.png app/src/main/res/mipmap-hdpi/ic_launcher.png
         elif [ -f "logo.jpg" ]; then
@@ -163,8 +160,8 @@ jobs:
         elif [ -f "logo.jpeg" ]; then
           cp logo.jpeg app/src/main/res/mipmap-hdpi/ic_launcher.png
         else
-          # إذا لم ترفع الصورة بعد، يضع أيقونة مؤقتة حتى لا يفشل البناء
-          touch app/src/main/res/mipmap-hdpi/ic_launcher.png
+          # إنشاء صورة حقيقية صالحة (بدل الملف الفارغ) لتجنب فشل المترجم
+          echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" | base64 -d > app/src/main/res/mipmap-hdpi/ic_launcher.png
         fi
 
     - name: Set up JDK 17
